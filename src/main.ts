@@ -39,33 +39,7 @@ const startApp = async () => {
     })
     api.subscribe(apiKey)
 
-    setInterval(async () => {
-        if (editedFiles.length) {
-            try {
-                await ftpClient.connect().then(() => {
-
-                    console.log('Uploading files...');
-                    console.log(editedFiles);
-                    editedFiles.map(async (fileName) => {
-                        const filePath = path.join(__dirname, `../data/${fileName}.log`);
-                        console.log(filePath);
-                        const remotePath = `/home/fryscrypto/weather/${fileName}.log`;
-                        console.log(`Uploading ${fileName}.log`);
-                        await ftpClient.uploadFile(filePath, remotePath);
-                        console.log(`Uploaded ${fileName}.log`);
-
-                    });
-
-                    editedFiles = [];
-                });
-            } catch (err) {
-                console.error(err);
-            } finally {
-                await ftpClient.disconnect();
-            }
-        }
-
-    }, 3e5);
+    setInterval(uploadFiles, 1000 * 60 * 5);
 };
 
 const log = (data: ambient.DeviceData & { device: ambient.Device }) => {
@@ -103,6 +77,34 @@ const log = (data: ambient.DeviceData & { device: ambient.Device }) => {
     }
 }
 
+const uploadFiles = async () => {
+    if (editedFiles.length) {
+        try {
+            await ftpClient.connect()
 
+            console.log('Uploading files...');
+            console.log(editedFiles);
+            const promises: Promise<void>[] = editedFiles.map(async (fileName) => {
+                return new Promise(async (resolve, reject) => {
+                    const filePath = path.join(__dirname, `../data/${fileName}.log`);
+                    console.log(filePath);
+                    const remotePath = `/home/fryscrypto/weather/${fileName}.log`;
+                    console.log(`Uploading ${fileName}.log`);
+                    await ftpClient.uploadFile(filePath, remotePath);
+                    console.log(`Uploaded ${fileName}.log`);
+                    resolve();
+                });
+            });
+            await Promise.all(promises);
+
+            editedFiles = [];
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            await ftpClient.disconnect();
+        }
+    }
+};
 
 startApp();
