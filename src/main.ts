@@ -11,31 +11,63 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let editedFiles: string[] = []
 
-const apiKey = process.env.AW_API_KEY!;
-const applicationKey = process.env.AW_APPLICATION_KEY!;
 
-const api = new ambient({
-    apiKey,
-    applicationKey
-});
+const startApp = async () => {
+    const apiKey = process.env.AW_API_KEY!;
+    const applicationKey = process.env.AW_APPLICATION_KEY!;
 
-function getName(device: Device) {
-    return device.info.name;
-}
+    const api = new ambient({
+        apiKey,
+        applicationKey
+    });
 
-api.connect()
-api.on('connect', () => console.log('Connected to Ambient Weather Realtime API!'))
+    function getName(device: Device) {
+        return device.info.name;
+    }
 
-api.on('subscribed', data => {
-    console.log('Subscribed to ' + data.devices.length + ' device(s): ')
-    console.log(data.devices.map(getName).join(', '))
-    console.log(data.devices)
-})
-api.on('data', data => {
-    console.log(data.date + ' - ' + getName(data.device) + ' current outdoor temperature is: ' + data.tempf + '°F')
-    log(data)
-})
-api.subscribe(apiKey)
+    api.connect()
+    api.on('connect', () => console.log('Connected to Ambient Weather Realtime API!'))
+
+    api.on('subscribed', data => {
+        console.log('Subscribed to ' + data.devices.length + ' device(s): ')
+        console.log(data.devices.map(getName).join(', '))
+        console.log(data.devices)
+    })
+    api.on('data', data => {
+        console.log(data.date + ' - ' + getName(data.device) + ' current outdoor temperature is: ' + data.tempf + '°F')
+        log(data)
+    })
+    api.subscribe(apiKey)
+
+    setInterval(async () => {
+        if (editedFiles.length) {
+            try {
+                await ftpClient.connect().then(() => {
+
+                    console.log('Uploading files...');
+                    console.log(editedFiles);
+                    editedFiles.map(async (fileName) => {
+                        const filePath = path.join(__dirname, `../data/${fileName}.log`);
+                        console.log(filePath);
+                        const remotePath = `/home/fryscrypto/weather/${fileName}.log`;
+                        console.log(`Uploading ${fileName}.log`);
+                        await ftpClient.uploadFile(filePath, remotePath);
+                        console.log(`Uploaded ${fileName}.log`);
+
+                    });
+
+                    editedFiles = [];
+                });
+            } catch (err) {
+                console.error(err);
+            } finally {
+                await ftpClient.disconnect();
+            }
+        }
+
+    }, 3e5);
+};
+
 const log = (data: ambient.DeviceData & { device: ambient.Device }) => {
     const fileName = data.device.macAddress.replace(/:/g, '-');
     const dir = './data';
@@ -71,31 +103,6 @@ const log = (data: ambient.DeviceData & { device: ambient.Device }) => {
     }
 }
 
-setInterval(async () => {
-    if (editedFiles.length) {
-        try {
-            await ftpClient.connect().then(() => {
 
-                console.log('Uploading files...');
-                console.log(editedFiles);
-                editedFiles.map(async (fileName) => {
-                    const filePath = path.join(__dirname, `../data/${fileName}.log`);
-                    console.log(filePath);
-                    const remotePath = `/home/fryscrypto/weather/${fileName}.log`;
-                    console.log(`Uploading ${fileName}.log`);
-                    await ftpClient.uploadFile(filePath, remotePath);
-                    console.log(`Uploaded ${fileName}.log`);
 
-                });
-
-                editedFiles = [];
-            });
-        } catch (err) {
-            console.error(err);
-            await ftpClient.disconnect();
-        } finally {
-            await ftpClient.disconnect();
-        }
-    }
-
-}, 10000);
+startApp();
