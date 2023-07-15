@@ -1,8 +1,8 @@
 import express from 'express';
 import bodyparser from 'body-parser';
-import { KeysModel } from 'db/models/keys-schema';
 import axios from 'axios';
-import { connect } from 'db/connect';
+import { KeysModel } from './db/models/keys-schema.js';
+import { connect, newApiKeyEvent } from './db/connect.js';
 const app = express()
 app.use(bodyparser.json());
 
@@ -54,6 +54,8 @@ app.post('/api/submitkey', async function (req, res) {
         timestamp: new Date()
     });
     await key.save();
+
+    newApiKeyEvent.emit('newApiKey', key._id);
 
     res.status(200).send({
         message: 'Successfully linked your API Key to your wallet address!\nWe will soon begin to retreive data from your weather stations/devices.',
