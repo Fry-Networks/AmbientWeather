@@ -7,12 +7,21 @@ import { rateLimit } from 'express-rate-limit';
 const app = express()
 app.use(bodyparser.json());
 
-const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 15, // Limit each IP to 15 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-})
+// Create a rate limiter that tracks by the 'address' field in the request body
+const limiter = rateLimit({ // Use Redis to store rate limit data
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each address to 100 requests per windowMs
+  keyGenerator: function(req) { // use 'address' field in body as key
+    return req.body.address;
+  },
+  handler: function(req, res) { // response when rate limit exceeded
+    res.status(429).send({
+      message: 'Too many requests, please try again later.',
+      status: 'ERROR'
+    });
+  }
+});
+
 
 app.use(limiter);
 app.set('trust proxy', 1);
@@ -24,6 +33,7 @@ app.get('/', function (req, res) {
 
 app.post('/api/submitkey', async function (req, res) {
     console.log(req.ip)
+    console.log(req.headers)
     try {
         const data: {
             key: string,
