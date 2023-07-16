@@ -24,7 +24,7 @@ app.post('/api/submitkey', async function (req, res) {
     if (existingKey) {
         return void res.status(409).send({
             message: 'Key already exists in database.',
-            color: 'red'
+            status: 'ERROR'
         });
     }
 
@@ -33,7 +33,7 @@ app.post('/api/submitkey', async function (req, res) {
     if (!regexCheck) {
         return void res.status(400).send({
             message: 'Key is invalid. (Didn\'t pass regex check)',
-            color: 'red'
+            status: 'ERROR'
         });
     }
 
@@ -43,7 +43,7 @@ app.post('/api/submitkey', async function (req, res) {
     if (response.status !== 200) {
         return void res.status(400).send({
             message: 'Key is invalid. (Didn\'t pass API check)',
-            color: 'red'
+            status: 'ERROR'
         });
     }
 
@@ -59,7 +59,7 @@ app.post('/api/submitkey', async function (req, res) {
 
     res.status(200).send({
         message: 'Successfully linked your API Key to your wallet address!\nWe will soon begin to retreive data from your weather stations/devices.',
-        color: 'green'
+        status: 'SUCCESS'
     });
 });
 
