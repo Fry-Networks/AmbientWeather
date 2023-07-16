@@ -10,11 +10,12 @@ app.use(bodyparser.json());
 // Create a rate limiter that tracks by the 'address' field in the request body
 const limiter = rateLimit({ // Use Redis to store rate limit data
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each address to 100 requests per windowMs
+  max: 15, // limit each address to 100 requests per windowMs
   keyGenerator: function(req) { // use 'address' field in body as key
     return req.body.address;
   },
   handler: function(req, res) { // response when rate limit exceeded
+    console.log('Rate limit exceeded for ' + req.body.address);
     res.status(429).send({
       message: 'Too many requests, please try again later.',
       status: 'ERROR'
@@ -32,8 +33,6 @@ app.get('/', function (req, res) {
 })
 
 app.post('/api/submitkey', async function (req, res) {
-    console.log(req.ip)
-    console.log(req.headers)
     try {
         const data: {
             key: string,
