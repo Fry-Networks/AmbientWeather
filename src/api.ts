@@ -15,8 +15,7 @@ const limiter = rateLimit({
 })
 
 app.use(limiter);
-
-
+app.set('trust proxy', 1);
 app.get('/', function (req, res) {
     res.status(403).send({
         message: 'Please use the API as described in the documentation.'
@@ -24,6 +23,7 @@ app.get('/', function (req, res) {
 })
 
 app.post('/api/submitkey', async function (req, res) {
+    console.log(req.ip)
     try {
         const data: {
             key: string,
