@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node build/main.js",
-    "dev": "nodemon --exec ts-node --esm src/main.ts "
+    "dev": "nodemon --exec ts-node --esm src/main.ts ",
+    "sync": "git pull && tsc && pm2 restart weather_data"
   },
   "keywords": [],
   "author": "",
