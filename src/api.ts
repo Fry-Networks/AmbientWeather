@@ -40,8 +40,9 @@ app.post('/api/submitkey', async function (req, res) {
 
         // Check if the key is valid by making a request to the API
         //https://rt.ambientweather.net/v1/devices?applicationKey=&apiKey=
-        const response = await axios.get(`https://rt.ambientweather.net/v1/devices?applicationKey=${process.env.AW_APPLICATION_KEY}&apiKey=${data.key}`);
-        if (response.status !== 200) {
+        try {
+        await axios.get(`https://rt.ambientweather.net/v1/devices?applicationKey=${process.env.AW_APPLICATION_KEY}&apiKey=${data.key}`);
+        } catch (e) {
             return void res.status(400).send({
                 message: 'Key is invalid. (Didn\'t pass API check)',
                 status: 'ERROR'
