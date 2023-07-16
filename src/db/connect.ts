@@ -31,6 +31,9 @@ export async function connect() {
             if (change.operationType === 'insert') {
                 newApiKeyEvent.emit('newApiKey', change.fullDocument._id);
             }
+            if (change.operationType === 'delete') {
+                newApiKeyEvent.emit('deleteApiKey', change.documentKey._id);
+            }
         });
     });
 }

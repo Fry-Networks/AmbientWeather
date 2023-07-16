@@ -4,7 +4,9 @@ import { startApi } from './api.js';
 import { WeatherModel } from './db/models/weather-schema.js';
 import { KeysModel } from './db/models/keys-schema.js';
 import { newApiKeyEvent } from './db/connect.js';
-let incomingData: (ambient.DeviceData & { device: ambient.Device })[] = []
+
+const clients: Map<string, ambient> = new Map();
+
 
 const startApp = async () => {
     const applicationKey = process.env.AW_APPLICATION_KEY!;
@@ -13,6 +15,10 @@ const startApp = async () => {
 
     // Function to create a new client for a given API key
     const createClientForKey = async (ObjectId: string) => {
+
+        if(clients.has(ObjectId)) return;
+
+
         const keyData = (await KeysModel.findById(ObjectId))!;
         const client = new ambient({
             apiKey: keyData.api_key,
@@ -36,18 +42,30 @@ const startApp = async () => {
             log(data);
         });
         client.subscribe(keyData.api_key);
+        clients.set(ObjectId, client);
+        return;
     };
 
     // Create clients for all existing keys
     const apiKeys = await KeysModel.find({});
     console.log(apiKeys)
     for (const key of apiKeys) {
+        try{
         await createClientForKey(key._id);
+        } catch (e: any) {
+            console.log(`Error creating client for key ${key.api_key} - ${e.stack}`);
+        }
     }
 
     newApiKeyEvent.on('newApiKey', async (ObjectId: string) => {
         await createClientForKey(ObjectId);
     });
+
+    newApiKeyEvent.on('deleteApiKey', async (ObjectId: string) => {
+        clients.get(ObjectId)?.disconnect();
+        clients.delete(ObjectId);
+    });
+
 
 };
 
