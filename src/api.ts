@@ -22,16 +22,16 @@ app.post('/api/submitkey', async function (req, res) {
     const existingKey = await KeysModel.exists({ api_key: data.key });
 
     if (existingKey) {
-        return void res.status(403).send({
+        return void res.status(409).send({
             message: 'Key already exists in database.',
             status: 'ERROR'
         });
     }
 
     // Check regex
-    const regexCheck = /[a-z|0-9]{64}/.test(data.key);
+    const regexCheck = /^[a-z0-9]{64}$/.test(data.key);
     if (!regexCheck) {
-        return void res.status(403).send({
+        return void res.status(400).send({
             message: 'Key is invalid. (Didn\'t pass regex check)',
             status: 'ERROR'
         });
@@ -41,7 +41,7 @@ app.post('/api/submitkey', async function (req, res) {
     //https://rt.ambientweather.net/v1/devices?applicationKey=&apiKey=
     const response = await axios.get(`https://rt.ambientweather.net/v1/devices?applicationKey=${process.env.AW_APPLICATION_KEY}&apiKey=${data.key}`);
     if (response.status !== 200) {
-        return void res.status(403).send({
+        return void res.status(400).send({
             message: 'Key is invalid. (Didn\'t pass API check)',
             status: 'ERROR'
         });
