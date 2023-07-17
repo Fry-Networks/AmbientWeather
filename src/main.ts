@@ -31,7 +31,8 @@ const startApp = async () => {
 
         client.connect();
         client.on('connect', () => console.log(`Connected with key ${keyData.api_key}`));
-
+        //@ts-ignore
+        client.on('error', console.error);
         client.on('subscribed', data => {
             console.log('Subscribed to ' + data.devices.length + ' device(s): ');
             console.log(data.devices.map(getName).join(', '));
