@@ -2,7 +2,7 @@ import 'dotenv/config';
 import ambient, { Device } from 'ambient-weather-api';
 import { startApi } from './api.js';
 import { WeatherModel } from './db/models/weather-schema.js';
-import { KeysModel } from './db/models/keys-schema.js';
+import { WeatherAccountModel } from 'db/models/weather_accounts.js';
 import { newApiKeyEvent } from './db/connect.js';
 
 const clients: Map<string, ambient> = new Map();
@@ -19,9 +19,9 @@ const startApp = async () => {
         if (clients.has(ObjectId)) return;
 
 
-        const keyData = (await KeysModel.findById(ObjectId))!;
+        const account = (await WeatherAccountModel.findById(ObjectId))!;
         const client = new ambient({
-            apiKey: keyData.api_key,
+            apiKey: account.api_key,
             applicationKey
         });
 
@@ -31,8 +31,8 @@ const startApp = async () => {
 
         client.connect();
         client.on('connect', () => {
-            console.log(`Connected with key ${keyData.api_key}`)
-            client.subscribe(keyData.api_key);
+            console.log(`Connected with key ${account.api_key}`)
+            client.subscribe(account.api_key);
         });
         //@ts-ignore
         client.on('error', console.error);
@@ -51,13 +51,13 @@ const startApp = async () => {
     };
 
     // Create clients for all existing keys
-    const apiKeys = await KeysModel.find({});
+    const apiKeys = await WeatherAccountModel.find({});
     console.log(apiKeys)
-    for (const key of apiKeys) {
+    for (const account of apiKeys) {
         try {
-            await createClientForKey(key._id);
+            await createClientForKey(account._id);
         } catch (e: any) {
-            console.log(`Error creating client for key ${key.api_key} - ${e.stack}`);
+            console.log(`Error creating client for key ${account.api_key} - ${e.stack}`);
         }
     }
 
@@ -74,11 +74,8 @@ const startApp = async () => {
 };
 
 const log = async (data: ambient.DeviceData & { device: ambient.Device }) => {
-    const location = {
-        lat: data.device.info.coords.coords.lat,
-        lon: data.device.info.coords.coords.lon,
-    }
-    console.log(location);
+    const condition = data.tempf || data.humidity || data.humidityin || data.tempinf || data.baromabsin || data.baromrelin
+    if (!condition) return;
     const toDb = new WeatherModel({
         timestamp: new Date(data.dateutc),
         temperature: data.tempf,

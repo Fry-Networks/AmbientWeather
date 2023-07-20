@@ -1,9 +1,10 @@
 import express from 'express';
 import bodyparser from 'body-parser';
 import axios from 'axios';
-import { KeysModel } from './db/models/keys-schema.js';
+import { WeatherAccountModel } from 'db/models/weather_accounts';
 import { connect, newApiKeyEvent } from './db/connect.js';
 import { rateLimit } from 'express-rate-limit';
+import { UserModel, getUserByAddress } from 'db/models/users-schema.js';
 const app = express()
 app.use(bodyparser.json());
 
@@ -40,7 +41,7 @@ app.post('/api/submitkey', async function (req, res) {
         } = req.body;
         console.log(data);
         // Check if the key is already in the database
-        const existingKey = await KeysModel.exists({ api_key: data.key });
+        const existingKey = await WeatherAccountModel.exists({ api_key: data.key });
 
         if (existingKey) {
             return void res.status(409).send({
@@ -70,9 +71,11 @@ app.post('/api/submitkey', async function (req, res) {
         }
 
         // Add the key to the database
-        const key = new KeysModel({
+        const user = await getUserByAddress(data.address);
+
+        const key = new WeatherAccountModel({
             api_key: data.key,
-            address: data.address,
+            user_id: user._id,
             timestamp: new Date()
         });
         await key.save();
