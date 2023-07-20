@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyparser from 'body-parser';
 import axios from 'axios';
-import { WeatherAccountModel } from './db/models/weather_accounts';
+import { WeatherAccountModel } from './db/models/weather_accounts.js';
 import { connect, newApiKeyEvent } from './db/connect.js';
 import { rateLimit } from 'express-rate-limit';
 import { UserModel, getUserByAddress } from 'db/models/users-schema.js';
