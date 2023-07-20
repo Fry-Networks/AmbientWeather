@@ -2,7 +2,7 @@ import 'dotenv/config';
 import ambient, { Device } from 'ambient-weather-api';
 import { startApi } from './api.js';
 import { WeatherModel } from './db/models/weather-schema.js';
-import { WeatherAccountModel } from 'db/models/weather_accounts.js';
+import { WeatherAccountModel } from './db/models/weather_accounts.js';
 import { newApiKeyEvent } from './db/connect.js';
 
 const clients: Map<string, ambient> = new Map();
