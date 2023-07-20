@@ -16,7 +16,7 @@ const startApp = async () => {
     // Function to create a new client for a given API key
     const createClientForKey = async (ObjectId: string) => {
 
-        if(clients.has(ObjectId)) return;
+        if (clients.has(ObjectId)) return;
 
 
         const keyData = (await KeysModel.findById(ObjectId))!;
@@ -30,7 +30,10 @@ const startApp = async () => {
         };
 
         client.connect();
-        client.on('connect', () => console.log(`Connected with key ${keyData.api_key}`));
+        client.on('connect', () => {
+            console.log(`Connected with key ${keyData.api_key}`)
+            client.subscribe(keyData.api_key);
+        });
         //@ts-ignore
         client.on('error', console.error);
         client.on('subscribed', data => {
@@ -42,7 +45,7 @@ const startApp = async () => {
             console.log(data.date + ' - ' + getName(data.device) + ' current outdoor temperature is: ' + data.tempf + '°F');
             log(data);
         });
-        client.subscribe(keyData.api_key);
+
         clients.set(ObjectId, client);
         return;
     };
@@ -51,8 +54,8 @@ const startApp = async () => {
     const apiKeys = await KeysModel.find({});
     console.log(apiKeys)
     for (const key of apiKeys) {
-        try{
-        await createClientForKey(key._id);
+        try {
+            await createClientForKey(key._id);
         } catch (e: any) {
             console.log(`Error creating client for key ${key.api_key} - ${e.stack}`);
         }
