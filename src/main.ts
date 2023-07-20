@@ -74,6 +74,11 @@ const startApp = async () => {
 };
 
 const log = async (data: ambient.DeviceData & { device: ambient.Device }) => {
+    const location = {
+        lat: data.device.info.coords.coords.lat,
+        lon: data.device.info.coords.coords.lon,
+    }
+    console.log(location);
     const toDb = new WeatherModel({
         timestamp: new Date(data.dateutc),
         temperature: data.tempf,
