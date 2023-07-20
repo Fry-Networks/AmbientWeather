@@ -1,6 +1,6 @@
 import mongoose, { mongo } from 'mongoose';
 export const byodSchema = new mongoose.Schema({
-	user_id: String,
+	user_id: mongoose.Schema.Types.ObjectId,
     licenses: [String],
     current_payment: {
         fry: Boolean,
@@ -9,7 +9,7 @@ export const byodSchema = new mongoose.Schema({
     payments: [Date]
 });
 export interface Byod extends mongoose.Document {
-	user_id: string,
+	user_id: mongoose.Schema.Types.ObjectId | string,
     licenses: string[],
     current_payment: {
         fry: boolean,

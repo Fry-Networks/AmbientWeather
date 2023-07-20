@@ -1,6 +1,6 @@
 import mongoose, { mongo } from 'mongoose';
 export const weatherAccountsSchema = new mongoose.Schema({
-    user_id: String,
+    user_id: mongoose.Schema.Types.ObjectId,
     timestamp: Date,
     api_key: String,
     devices: {
@@ -19,7 +19,7 @@ export const weatherAccountsSchema = new mongoose.Schema({
 });
 
 export interface weatherAccount extends mongoose.Document {
-    user_id: string,
+    user_id: mongoose.Schema.Types.ObjectId | string,
     timestamp: Date,
     api_key: string,
     devices: {

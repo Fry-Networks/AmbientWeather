@@ -25,8 +25,8 @@ export async function connect() {
 
 
     mongoose.connection.on('open', async () => {
-        const keysCollection = mongoose.connection.collection('keys');
-        const changeStream = keysCollection.watch();
+        const accountCollection = mongoose.connection.collection('weather_accounts');
+        const changeStream = accountCollection.watch();
         changeStream.on('change', (change) => {
             if (change.operationType === 'insert') {
                 newApiKeyEvent.emit('newApiKey', change.fullDocument._id);
