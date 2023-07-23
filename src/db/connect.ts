@@ -9,7 +9,7 @@ export async function connect() {
     console.log('Connecting to MongoDB...');
     await mongoose.connect(uri);
 
-    mongoose.connection.useDb('weather');
+    mongoose.connection.useDb('main');
 
     mongoose.connection.on('connected', () => {
         console.log('Connected to MongoDB!');
