@@ -24,7 +24,6 @@ const limiter = rateLimit({ // Use Redis to store rate limit data
   }
 });
 
-
 app.use(limiter);
 app.set('trust proxy', 1);
 app.get('/', function (req, res) {
@@ -49,7 +48,6 @@ app.post('/api/submitkey', async function (req, res) {
                 status: 'ERROR'
             });
         }
-
         // Check regex
         const regexCheck = /^[a-z0-9]{64}$/.test(data.key);
         if (!regexCheck) {
@@ -58,7 +56,6 @@ app.post('/api/submitkey', async function (req, res) {
                 status: 'ERROR'
             });
         }
-
         // Check if the key is valid by making a request to the API
         //https://rt.ambientweather.net/v1/devices?applicationKey=&apiKey=
         try {
@@ -69,7 +66,6 @@ app.post('/api/submitkey', async function (req, res) {
                 status: 'ERROR'
             });
         }
-
         // Add the key to the database
         const user = await getUserByAddress(data.address);
 
