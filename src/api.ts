@@ -75,8 +75,9 @@ app.post('/api/submitkey', async function (req, res) {
             timestamp: new Date()
         });
         await key.save();
-
         newApiKeyEvent.emit('newApiKey', key._id);
+
+        
 
         res.status(200).send({
             message: 'Successfully linked your API Key to your wallet address!\nWe will soon begin to retreive data from your weather stations/devices.',

@@ -39,7 +39,34 @@ const startApp = async () => {
         client.on('subscribed', data => {
             console.log('Subscribed to ' + data.devices.length + ' device(s): ');
             console.log(data.devices.map(getName).join(', '));
-            console.log(data.devices);
+
+            const toDb = data.devices.map((device) => {
+                /*devices: {
+        deviceMAC: string,
+        infos: {
+            coords: {
+                lat: number,
+                lon: number
+            },
+            name: string,
+        }
+    }*/
+                return {
+                    deviceMAC: device.macAddress,
+                    infos: {
+                        coords: {
+                            lat: device.info.coords.coords.lat,
+                            lon: device.info.coords.coords.lon
+                        },
+                        name: device.info.name,
+                    }
+                }
+            });
+
+            if(account.devices !== toDb) {
+                account.devices = toDb;
+                account.save();
+            }
         });
         client.on('data', data => {
             console.log(data.date + ' - ' + getName(data.device) + ' current outdoor temperature is: ' + data.tempf + '°F');
