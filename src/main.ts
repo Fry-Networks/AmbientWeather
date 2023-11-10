@@ -177,7 +177,6 @@ const startApp = async () => {
     const accountApiKey = account.api_key;
 
     const accountAppKey = account.app_key;
-
     function getName(device: EcoWittDevice) {
       return device.name;
     }
