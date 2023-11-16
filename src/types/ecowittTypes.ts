@@ -25,7 +25,7 @@ export interface EcoWittDevicesResponse {
 export interface EcoWittDeviceData {
   code: 0;
   msg: string;
-  time: string;
+  time: any;
   data: Data;
 }
 

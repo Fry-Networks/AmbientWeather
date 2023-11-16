@@ -11,102 +11,10 @@ import {
   EcoWittDevicesResponse,
 } from "types/ecowittTypes.js";
 
-// const clients: Map<string, ambient> = new Map();
-
-// const startApp = async () => {
-//   const applicationKey = process.env.AW_APPLICATION_KEY!;
-
-//   startApi();
-
-// Function to create a new client for a given API key
-// const createClientForKey = async (ObjectId: string) => {
-
-//     if (clients.has(ObjectId)) return;
-
-//     const account = (await WeatherAccountModel.findById(ObjectId))!;
-//     const client = new ambient({
-//         apiKey: account.api_key,
-//         applicationKey
-//     });
-
-//     function getName(device: Device) {
-//         return device.info.name;
-//     };
-
-//     client.connect();
-//     client.on('connect', () => {
-//         console.log(`Connected with key ${account.api_key}`)
-//         client.subscribe(account.api_key);
-//     });
-//     //@ts-ignore
-//     client.on('error', console.error);
-//     client.on('subscribed', data => {
-//         console.log('Subscribed to ' + data.devices.length + ' device(s): ');
-//         console.log(data.devices.map(getName).join(', '));
-
-//           const toDb = data.devices.map((device) => {
-//               /*devices: {
-//       deviceMAC: string,
-//       infos: {
-//           coords: {
-//               lat: number,
-//               lon: number
-//           },
-//           name: string,
-//       }
-//   }*/
-//               return {
-//                   deviceMAC: device.macAddress,
-//                   infos: {
-//                       coords: {
-//                           lat: device.info.coords.coords.lat,
-//                           lon: device.info.coords.coords.lon
-//                       },
-//                       name: device.info.name,
-//                   }
-//               }
-//           });
-
-//         if(account.devices !== toDb) {
-//             account.devices = toDb;
-//             account.save();
-//         }
-//     });
-//     client.on('data', data => {
-//         console.log(data.date + ' - ' + getName(data.device) + ' current outdoor temperature is: ' + data.tempf + '°F');
-//         log(data);
-//     });
-
-//     clients.set(ObjectId, client);
-//     return;
-// };
-
-// // Create clients for all existing keys
-// const apiKeys = await WeatherAccountModel.find({});
-// console.log(apiKeys)
-// for (const account of apiKeys) {
-//     try {
-//         await createClientForKey(account._id);
-//     } catch (e: any) {
-//         console.log(`Error creating client for key ${account.api_key} - ${e.stack}`);
-//     }
-// }
-
-// newApiKeyEvent.on('newApiKey', async (ObjectId: string) => {
-//     await createClientForKey(ObjectId);
-// });
-
-// newApiKeyEvent.on('deleteApiKey', async (ObjectId: string) => {
-//     clients.get(ObjectId)?.disconnect();
-//     clients.delete(ObjectId);
-// });
-// };
-
 const clients: Map<string, string> = new Map();
 const ambientClients: Map<string, ambient> = new Map();
 
 const startApp = async () => {
-  // const applicationKey = process.env.ECOWITT_APPLICATION_KEY!;
   const ambientApplicationKey = process.env.AW_APPLICATION_KEY!;
 
   startApi();
@@ -177,6 +85,7 @@ const startApp = async () => {
     const accountApiKey = account.api_key;
 
     const accountAppKey = account.app_key;
+
     function getName(device: EcoWittDevice) {
       return device.name;
     }
@@ -219,10 +128,9 @@ const startApp = async () => {
 
     const fetchDeviceData = async (val: any) => {
       try {
-        const data: EcoWittDeviceData = await axios.get(
+        const { data } = await axios.get(
           `https://api.ecowitt.net/api/v3/device/real_time?application_key=${accountAppKey}&api_key=${accountApiKey}&mac=${val?.deviceMAC}&call_back=all`
         );
-        console.log(data, "data");
         log(data, val);
       } catch (error) {
         console.error(error);
@@ -236,7 +144,7 @@ const startApp = async () => {
       await Promise.all(devices?.map((val: any) => fetchDeviceData(val)));
     };
 
-    setInterval(fetchInterval, 300000);
+    setInterval(fetchInterval, 30000);
 
     clients.set(ObjectId, accountApiKey);
 
@@ -291,56 +199,120 @@ const startApp = async () => {
 };
 
 const log = async (data: EcoWittDeviceData, deviceInfo: any) => {
-  let storeD = data.data;
+  let storeD = data?.data;
 
   const condition =
-    storeD.outdoor.temperature.value ||
-    storeD.outdoor.humidity.value ||
-    storeD.indoor.temperature.value ||
-    storeD.indoor.humidity.value;
+    storeD?.outdoor?.temperature?.value ||
+    storeD?.outdoor?.humidity?.value ||
+    storeD?.indoor?.temperature?.value ||
+    storeD?.indoor?.humidity?.value;
   if (!condition) return;
   const toDb = new WeatherModel({
-    timestamp: new Date(data.time),
-    temperature: +storeD.outdoor.temperature.value,
-    winddir: +storeD.wind.wind_direction,
-    windspeedmph: +storeD.wind.wind_speed,
-    windgustmph: +storeD.wind.wind_gust,
-    humidity: +storeD.outdoor.humidity.value,
-    humidityin: +storeD.indoor.humidity.value,
-    tempf: +storeD.outdoor.temperature.value,
-    uv: +storeD.solar_and_uvi.uvi.value,
-    solarradiation: +storeD.solar_and_uvi.solar.value,
-    co2: +storeD.indoor_co2.co2.value,
-    hourlyrainin: +storeD.rainfall.hourly.value,
-    dailyrainin: +storeD.rainfall.daily.value,
-    weeklyrainin: +storeD.rainfall.weekly.value,
-    monthlyrainin: +storeD.rainfall.monthly.value,
-    yearlyrainin: +storeD.rainfall.yearly.value,
-    eventrainin: +storeD.rainfall.event.value,
-    totalrainin: +storeD.rainfall.rain_rate.value,
+    timestamp: new Date(+data?.time * 1000),
+    temperature: storeD?.outdoor?.temperature?.value
+      ? +storeD?.outdoor?.temperature?.value
+      : undefined,
+    winddir: storeD?.wind?.wind_direction
+      ? +storeD?.wind?.wind_direction
+      : undefined,
+    windspeedmph: storeD?.wind?.wind_speed
+      ? +storeD?.wind?.wind_speed
+      : undefined,
+    windgustmph: storeD?.wind?.wind_gust ? +storeD?.wind?.wind_gust : undefined,
+    humidity: storeD?.outdoor?.humidity?.value
+      ? +storeD?.outdoor?.humidity?.value
+      : undefined,
+    humidityin: storeD?.indoor?.humidity?.value
+      ? +storeD?.indoor?.humidity?.value
+      : undefined,
+    tempf: storeD?.outdoor?.temperature?.value
+      ? +storeD?.outdoor?.temperature?.value
+      : undefined,
+    uv: storeD?.solar_and_uvi?.uvi?.value
+      ? +storeD?.solar_and_uvi?.uvi?.value
+      : undefined,
+    solarradiation: storeD?.solar_and_uvi?.solar?.value
+      ? +storeD?.solar_and_uvi?.solar?.value
+      : undefined,
+    co2: storeD?.indoor_co2?.co2?.value
+      ? +storeD?.indoor_co2?.co2?.value
+      : undefined,
+    hourlyrainin: storeD?.rainfall?.hourly?.value
+      ? +storeD?.rainfall?.hourly?.value
+      : undefined,
+    dailyrainin: storeD?.rainfall?.daily?.value
+      ? +storeD?.rainfall?.daily?.value
+      : undefined,
+    weeklyrainin: storeD?.rainfall?.weekly?.value
+      ? +storeD?.rainfall?.weekly?.value
+      : undefined,
+    monthlyrainin: storeD?.rainfall?.monthly?.value
+      ? +storeD?.rainfall?.monthly?.value
+      : undefined,
+    yearlyrainin: storeD?.rainfall?.yearly?.value
+      ? +storeD?.rainfall?.yearly?.value
+      : undefined,
+    eventrainin: storeD?.rainfall?.event?.value
+      ? +storeD?.rainfall?.event?.value
+      : undefined,
+    totalrainin: storeD?.rainfall?.rain_rate?.value
+      ? +storeD?.rainfall?.rain_rate?.value
+      : undefined,
     metadata: {
-      deviceMAC: deviceInfo.macAddress,
+      deviceMAC: deviceInfo?.macAddress,
       location: {
-        lat: deviceInfo.infos.coords.lat,
-        lon: deviceInfo.infos.coords.lon,
+        lat: deviceInfo?.infos?.coords?.lat,
+        lon: deviceInfo?.infos?.coords?.lon,
       },
     },
-    humidity1: +storeD.temp_and_humidity_ch1.humidity.value,
-    humidity2: +storeD.temp_and_humidity_ch2.humidity.value,
-    humidity3: +storeD.temp_and_humidity_ch3.humidity.value,
-    humidity4: +storeD.temp_and_humidity_ch4.humidity.value,
-    humidity5: +storeD.temp_and_humidity_ch5.humidity.value,
-    humidity6: +storeD.temp_and_humidity_ch6.humidity.value,
-    humidity7: +storeD.temp_and_humidity_ch7.humidity.value,
-    humidity8: +storeD.temp_and_humidity_ch8.humidity.value,
-    temp1f: +storeD.temp_ch1.temperature.value,
-    temp2f: +storeD.temp_ch2.temperature.value,
-    temp3f: +storeD.temp_ch3.temperature.value,
-    temp4f: +storeD.temp_ch4.temperature.value,
-    temp5f: +storeD.temp_ch5.temperature.value,
-    temp6f: +storeD.temp_ch6.temperature.value,
-    temp7f: +storeD.temp_ch7.temperature.value,
-    temp8f: +storeD.temp_ch8.temperature.value,
+    humidity1: storeD?.temp_and_humidity_ch1?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch1?.humidity?.value
+      : undefined,
+    humidity2: storeD?.temp_and_humidity_ch1?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch2?.humidity?.value
+      : undefined,
+    humidity3: storeD?.temp_and_humidity_ch3?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch3?.humidity?.value
+      : undefined,
+    humidity4: storeD?.temp_and_humidity_ch4?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch4?.humidity?.value
+      : undefined,
+    humidity5: storeD?.temp_and_humidity_ch5?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch5?.humidity?.value
+      : undefined,
+    humidity6: storeD?.temp_and_humidity_ch6?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch6?.humidity?.value
+      : undefined,
+    humidity7: storeD?.temp_and_humidity_ch7?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch7?.humidity?.value
+      : undefined,
+    humidity8: storeD?.temp_and_humidity_ch8?.humidity?.value
+      ? +storeD?.temp_and_humidity_ch8?.humidity?.value
+      : undefined,
+    temp1f: storeD?.temp_ch1?.temperature?.value
+      ? +storeD?.temp_ch1?.temperature?.value
+      : undefined,
+    temp2f: storeD?.temp_ch2?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
+    temp3f: storeD?.temp_ch3?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
+    temp4f: storeD?.temp_ch4?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
+    temp5f: storeD?.temp_ch5?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
+    temp6f: storeD?.temp_ch6?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
+    temp7f: storeD?.temp_ch7?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
+    temp8f: storeD?.temp_ch8?.temperature?.value
+      ? +storeD?.temp_ch2?.temperature?.value
+      : undefined,
   });
   await toDb.save();
 };
