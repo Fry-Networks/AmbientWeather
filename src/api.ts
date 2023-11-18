@@ -95,6 +95,61 @@ app.post("/api/submitkey", async function (req, res) {
     });
   }
 });
+app.post("/api/submitXMToken", async function (req, res) {
+  try {
+    const data: {
+      token: string;
+      address: string;
+    } = req.body;
+    console.log(data);
+    // Check if the token is already in the database
+    const existingToken = await WeatherAccountModel.exists({ token: data.token });
+
+    if (existingToken) {
+      return void res.status(409).send({
+        message: "Token already exists in database.",
+        status: "ERROR",
+      });
+    }
+    // Check if the key is valid by making a request to the API
+    //https://rt.ambientweather.net/v1/devices?applicationKey=&apiKey=
+    try {
+      const response = await axios.get(
+        'https://api.weatherxm.com/api/v1/me',
+        {
+          headers: {
+            Authorization: `Bearer ${data.token}`,
+          },
+        }
+      );
+    } catch (e) {
+      return void res.status(401).send({
+        message: "Token is invalid. (Didn't pass API check)",
+        status: "ERROR",
+      });
+    }
+    // Add the key to the database
+    const user = await getUserByAddress(data.address);
+
+    const key = new WeatherAccountModel({
+      token: data.token,
+      user_id: user._id,
+      timestamp: new Date(),
+    });
+    await key.save();
+
+    res.status(200).send({
+      message:
+        "Successfully linked your Token to your wallet address!\nWe will soon begin to retreive data from your weather stations/devices.",
+      status: "SUCCESS",
+    });
+  } catch (e) {
+    res.status(500).send({
+      message: "Internal server error.",
+      status: "ERROR",
+    });
+  }
+});
 
 app.post("/api/submitEcokey", async function (req, res) {
   try {

@@ -5,6 +5,7 @@ export const weatherAccountsSchema = new mongoose.Schema({
   api_key: String,
   api_type: String,
   app_key: String,
+  token: String,
   devices: {
     type: [
       {
@@ -28,6 +29,7 @@ export interface weatherAccount extends mongoose.Document {
   api_key: string;
   api_type: string;
   app_key?: string;
+  token?: string;
   devices: {
     deviceMAC: string;
     infos: {
