@@ -29,7 +29,7 @@ export interface weatherAccount extends mongoose.Document {
   api_key: string;
   api_type: string;
   app_key?: string;
-  token?: string;
+  token?: string | undefined;
   devices: {
     deviceMAC: string;
     infos: {

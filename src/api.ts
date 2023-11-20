@@ -98,12 +98,15 @@ app.post("/api/submitkey", async function (req, res) {
 app.post("/api/submitXMToken", async function (req, res) {
   try {
     const data: {
-      token: string;
+      username: string;
+      password:string;
       address: string;
     } = req.body;
-    console.log(data);
+    try {
+      const loginResponse:any =await axios.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password})
+    // console.log(loginResponse);
     // Check if the token is already in the database
-    const existingToken = await WeatherAccountModel.exists({ token: data.token });
+    const existingToken = await WeatherAccountModel.exists({ token: loginResponse.data.token });
 
     if (existingToken) {
       return void res.status(409).send({
@@ -118,7 +121,7 @@ app.post("/api/submitXMToken", async function (req, res) {
         'https://api.weatherxm.com/api/v1/me',
         {
           headers: {
-            Authorization: `Bearer ${data.token}`,
+            Authorization: `Bearer ${loginResponse.data.token}`,
           },
         }
       );
@@ -132,7 +135,7 @@ app.post("/api/submitXMToken", async function (req, res) {
     const user = await getUserByAddress(data.address);
 
     const key = new WeatherAccountModel({
-      token: data.token,
+      token: loginResponse.data.token,
       user_id: user._id,
       timestamp: new Date(),
     });
@@ -143,6 +146,12 @@ app.post("/api/submitXMToken", async function (req, res) {
         "Successfully linked your Token to your wallet address!\nWe will soon begin to retreive data from your weather stations/devices.",
       status: "SUCCESS",
     });
+    } catch (error:any) {
+      res.status(400).send({
+        message: error.response.data.message,
+        status: "ERROR",
+      });
+    }
   } catch (e) {
     res.status(500).send({
       message: "Internal server error.",
