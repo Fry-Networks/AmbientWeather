@@ -5,7 +5,10 @@ export const weatherAccountsSchema = new mongoose.Schema({
   api_key: String,
   api_type: String,
   app_key: String,
-  token: String,
+  token: {
+    type:String,
+    required:false,
+  },
   devices: {
     type: [
       {
