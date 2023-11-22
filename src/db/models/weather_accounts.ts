@@ -2,9 +2,18 @@ import mongoose, { mongo } from "mongoose";
 export const weatherAccountsSchema = new mongoose.Schema({
   user_id: mongoose.Schema.Types.ObjectId,
   timestamp: Date,
-  api_key: String,
-  api_type: String,
-  app_key: String,
+  api_key: {
+    type:String,
+    required:false,
+  },
+  api_type: {
+    type:String,
+    required:false,
+  },
+  app_key: {
+    type:String,
+    required:false,
+  },
   token: {
     type:String,
     required:false,
@@ -32,7 +41,7 @@ export interface weatherAccount extends mongoose.Document {
   api_key: string;
   api_type: string;
   app_key?: string;
-  token?: string | undefined;
+  token: string;
   devices: {
     deviceMAC: string;
     infos: {

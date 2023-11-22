@@ -135,6 +135,7 @@ app.post("/api/submitXMToken", async function (req, res) {
     const user = await getUserByAddress(data.address);
 
     const key = new WeatherAccountModel({
+      api_type:'weather-xm',
       token: loginResponse.data.token,
       user_id: user._id,
       timestamp: new Date(),
