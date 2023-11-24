@@ -317,8 +317,8 @@ const startApp = async () => {
       await Promise.all(devices?.map((val: any) => fetchDeviceData(val)));
     };
 
-    // setInterval(fetchInterval, 300000);
-    devices?.map((val: any) => fetchDeviceData(val))
+    setInterval(fetchInterval, 300000);
+    // devices?.map((val: any) => fetchDeviceData(val))
     weatherXMClients.set(ObjectId, accountToken);
 
     return;
