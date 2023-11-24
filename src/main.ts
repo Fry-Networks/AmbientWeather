@@ -263,11 +263,6 @@ const startApp = async () => {
           'Authorization': `Bearer ${accountToken}`,
         },
       });
-      console.log(
-        `Subscribed to ${data?.data?.length} devices`,
-        data?.data
-      );
-      console.log(data.data?.map(getName).join(", "));
 
       const toDb = data?.data?.map((device:any) => {
         return {
@@ -293,8 +288,15 @@ const startApp = async () => {
     }
 
     const fetchDeviceData = async (val: any) => {
+      const today = new Date();
+
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      
+      const formattedDate = `${year}-${month}-${day}`;
       try {
-        const data: any = await axios.get(`/api/v1/me/devices/${val.id}/history?fromDate=${new Date().toLocaleDateString('en-GB')}&toDate=${new Date().toLocaleDateString('en-GB')}`, {
+        const res: any = await axios.get(`https://api.weatherxm.com/api/v1/me/devices/${val.id}/history?fromDate=${formattedDate}&toDate=${formattedDate}`, {
           headers: {
             'accept': 'application/json',
             'Authorization': `Bearer ${accountToken}`,
@@ -303,22 +305,20 @@ const startApp = async () => {
         // axios.get(
         //   `https://api.ecowitt.net/api/v3/device/real_time?application_key=${accountAppKey}&api_key=${accountApiKey}&mac=${val?.deviceMAC}&call_back=all`
         // );
-        console.log(data, "data");
-        logXM(data[0], val);
+        logXM(res.data, val);
       } catch (error) {
         console.error(error);
       }
     };
 
-    console.log(devices, "weather xm devices");
 
     const fetchInterval = async () => {
       if (!Array.isArray(devices) || devices?.length === 0) return;
       await Promise.all(devices?.map((val: any) => fetchDeviceData(val)));
     };
 
-    setInterval(fetchInterval, 300000);
-
+    // setInterval(fetchInterval, 300000);
+    devices?.map((val: any) => fetchDeviceData(val))
     weatherXMClients.set(ObjectId, accountToken);
 
     return;
@@ -445,32 +445,33 @@ const log = async (data: EcoWittDeviceData, deviceInfo: any) => {
   await toDb.save();
 };
 const logXM = async (data: any, deviceInfo: any) => {
-  let storeD = data.data;
+  let storeD = data[0];
 
   const condition =
     storeD.tz ||
     storeD.date ||
     storeD.hourly 
   if (!condition) return;
+  const latest=storeD.hourly[storeD.hourly.length-1]
   const toDb = new WeatherModel({
-    timestamp: new Date(data.time),
-    temperature: +storeD.hourly.temperature,
-    winddir: +storeD.hourly.wind_direction,
-    windspeedmph: +storeD.hourly.wind_speed,
-    // windgustmph: +storeD.hourly.wind.wind_gust,
-    humidity: +storeD.hourly.humidity,
-    // humidityin: +storeD.hourly.indoor.humidity.value,
-    // tempf: +storeD.hourly.outdoor.temperature.value,
-    uv: +storeD.hourly.uv_index,
-    solarradiation: +storeD.hourly.solar_irradiance,
-    // co2: +storeD.hourly.indoor_co2.co2.value,
-    // hourlyrainin: +storeD.hourly.rainfall.hourly.value,
-    // dailyrainin: +storeD.hourly.rainfall.daily.value,
-    // weeklyrainin: +storeD.hourly.rainfall.weekly.value,
-    // monthlyrainin: +storeD.hourly.rainfall.monthly.value,
-    // yearlyrainin: +storeD.hourly.rainfall.yearly.value,
-    // eventrainin: +storeD.hourly.rainfall.event.value,
-    // totalrainin: +storeD.hourly.rainfall.rain_rate.value,
+    timestamp: new Date(latest.timestamp),
+    temperature: +latest.temperature,
+    winddir: +latest.wind_direction,
+    windspeedmph: +latest.wind_speed,
+    // windgustmph: +latest.wind.wind_gust,
+    humidity: +latest.humidity,
+    // humidityin: +latest.indoor.humidity.value,
+    // tempf: +latest.outdoor.temperature.value,
+    uv: +latest.uv_index,
+    solarradiation: +latest.solar_irradiance,
+    // co2: +latest.indoor_co2.co2.value,
+    // hourlyrainin: +latest.rainfall.hourly.value,
+    // dailyrainin: +latest.rainfall.daily.value,
+    // weeklyrainin: +latest.rainfall.weekly.value,
+    // monthlyrainin: +latest.rainfall.monthly.value,
+    // yearlyrainin: +latest.rainfall.yearly.value,
+    // eventrainin: +latest.rainfall.event.value,
+    // totalrainin: +latest.rainfall.rain_rate.value,
     metadata: {
       deviceMAC: deviceInfo.macAddress,
       location: {
