@@ -176,7 +176,7 @@ app.post("/api/submitEcokey", async function (req, res) {
 
     if (existingKey) {
       return void res.status(409).send({
-        message: "Key already exists in database.",
+        message: "Api Key already exists in database.",
         status: "ERROR",
       });
     }
@@ -197,7 +197,12 @@ app.post("/api/submitEcokey", async function (req, res) {
       const d: any = await axios.get(
         `https://api.ecowitt.net/api/v3/device/list?application_key=${data.app_key}&api_key=${data.key}`
       );
-      console.log(d?.data, "didkdk");
+      if (d.data.code !== 0) {
+        return void res.status(400).send({
+          message: "Key is invalid. (Didn't pass API check)",
+          status: "ERROR",
+        });
+      }
     } catch (e) {
       return void res.status(400).send({
         message: "Key is invalid. (Didn't pass API check)",

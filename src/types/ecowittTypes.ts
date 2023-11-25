@@ -30,6 +30,9 @@ export interface EcoWittDeviceData {
 }
 
 export interface Data {
+  code: 0;
+  msg: string;
+  time: string;
   outdoor: Outdoor;
   indoor: Indoor;
   solar_and_uvi: SolarAndUvi;
