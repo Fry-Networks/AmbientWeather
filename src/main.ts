@@ -24,7 +24,9 @@ const startApp = async () => {
   const createClientForAmbientKey = async (ObjectId: string) => {
     if (ambientClients.has(ObjectId)) return;
 
-    const account: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
+    let account: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
+    if(!account) account = (await WeatherAccount.findById(ObjectId))! as Ambientaccount;
+    
     const client = new ambient({
       apiKey: account.api_key,
       applicationKey: ambientApplicationKey,
