@@ -9,7 +9,7 @@ import {
   EcoWittDeviceData,
   EcoWittDevicesResponse,
 } from "types/ecowittTypes.js";
-import { Ambientaccount, Ambientmodel, Ecowittaccount, Ecowittmodel, WXMaccount, WXMmodel, WeatherAccount } from "db/models/weather_accounts.js";
+import { Ambientaccount, Ambientmodel, Ecowittaccount, Ecowittmodel, WXMaccount, WXMmodel, WeatherAccount } from "./db/models/weather_accounts.js";
 
 const clients: Map<string, string> = new Map();
 const weatherXMClients: Map<string, string> = new Map();
@@ -231,8 +231,7 @@ const startApp = async () => {
 
     return;
   };
-
-  const ambientApiKeys: Ambientaccount[] = await Ambientmodel.find({
+  const ambientApiKeys: Ambientaccount[] = await WeatherAccount.find({
     api_type: {
       $in: ["ambient"],
     },
