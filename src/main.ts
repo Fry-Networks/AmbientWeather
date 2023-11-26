@@ -27,9 +27,6 @@ const startApp = async () => {
     let accountData: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
     if(!accountData){ accountData = (await WeatherAccount.findById(ObjectId))!;}
     const account: Ambientaccount = accountData.toObject();
-      console.log(account)
-      console.log(account.timestamp)
-      console.log(account.api_key)
     const client = new ambient({
       apiKey: account.api_key,
       applicationKey: ambientApplicationKey,
@@ -69,14 +66,6 @@ const startApp = async () => {
       }
     });
     client.on("data", (data) => {
-      console.log(
-        data.date +
-        " - " +
-        getName(data.device) +
-        " current outdoor temperature is: " +
-        data.tempf +
-        "°F"
-      );
       logAmbient(data);
     });
 
@@ -303,7 +292,6 @@ const logEcoWitt = async (data: any, deviceInfo: any) => {
 
   let fullData: EcoWittDeviceData = data.data;
   let storeD = fullData.data
-  console.log(storeD)
   const toDb = new WeatherModel({
     timestamp: new Date(parseInt(fullData.time) * 1000),
     temperature: storeD.outdoor?.temperature?.value ? +storeD.outdoor.temperature.value

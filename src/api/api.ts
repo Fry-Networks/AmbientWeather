@@ -1,7 +1,7 @@
 import express from "express";
 import bodyparser from "body-parser";
 import axios from "axios";
-import { WeatherAccount } from "../db/models/weather_accounts.js";
+import { Ambientmodel, Ecowittmodel, WXMmodel, WeatherAccount } from "../db/models/weather_accounts.js";
 import { connect, newApiKeyEvent } from "../db/connect.js";
 import { rateLimit } from "express-rate-limit";
 import { getUserByAddress } from "../db/models/users-schema.js";
@@ -43,7 +43,7 @@ app.post("/api/submitkey", async function (req, res) {
     } = req.body;
     console.log(data);
     // Check if the key is already in the database
-    const existingKey = await WeatherAccount.exists({ api_key: data.key });
+    const existingKey = (await WeatherAccount.exists({ api_key: data.key })) || (await Ambientmodel.exists({ token: data.key }));
 
     if (existingKey) {
       return void res.status(409).send({
@@ -74,7 +74,7 @@ app.post("/api/submitkey", async function (req, res) {
     // Add the key to the database
     const user = await getUserByAddress(data.address);
 
-    const key = new WeatherAccount({
+    const key = new Ambientmodel({
       api_key: data.key,
       user_id: user._id,
       timestamp: new Date(),
@@ -106,7 +106,7 @@ app.post("/api/submitXMToken", async function (req, res) {
       const loginResponse:any =await axios.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password})
     // console.log(loginResponse);
     // Check if the token is already in the database
-    const existingToken = await WeatherAccount.exists({ token: loginResponse.data.token });
+    const existingToken = await WXMmodel.exists({ token: loginResponse.data.token });
 
     if (existingToken) {
       return void res.status(409).send({
@@ -134,7 +134,7 @@ app.post("/api/submitXMToken", async function (req, res) {
     // Add the key to the database
     const user = await getUserByAddress(data.address);
 
-    const key = new WeatherAccount({
+    const key = new WXMmodel({
       api_type:'weather-xm',
       token: loginResponse.data.token,
       user_id: user._id,
@@ -170,7 +170,7 @@ app.post("/api/submitEcokey", async function (req, res) {
     } = req.body;
     console.log(data);
     // Check if the key is already in the database
-    const existingKey = await WeatherAccount.exists({
+    const existingKey = await Ecowittmodel.exists({
       api_key: data.key,
     });
 
@@ -181,7 +181,7 @@ app.post("/api/submitEcokey", async function (req, res) {
       });
     }
 
-    const existingAppKey = await WeatherAccount.exists({
+    const existingAppKey = await Ecowittmodel.exists({
       app_key: data?.app_key,
     });
 
@@ -212,7 +212,7 @@ app.post("/api/submitEcokey", async function (req, res) {
     // Add the key to the database
     const user = await getUserByAddress(data.address);
 
-    const key = new WeatherAccount({
+    const key = new Ecowittmodel({
       api_key: data.key,
       user_id: user._id,
       timestamp: new Date(),
