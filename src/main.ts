@@ -26,7 +26,7 @@ const startApp = async () => {
 
     let account: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
     if(!account) account = (await WeatherAccount.findById(ObjectId))! as Ambientaccount;
-    
+      console.log(account, "account")
     const client = new ambient({
       apiKey: account.api_key,
       applicationKey: ambientApplicationKey,
@@ -238,7 +238,6 @@ const startApp = async () => {
       $in: ["ambient"],
     },
   });
-  console.log(ambientApiKeys, "ambient api keys");
   for (let account of ambientApiKeys) {
     try {
       await createClientForAmbientKey(account._id);
@@ -253,7 +252,6 @@ const startApp = async () => {
       $in: ["weather-xm"],
     },
   });
-  console.log(xmTokens, "weather-xm");
   for (const account of xmTokens) {
     try {
       await createClientForWeatherXM(account._id);
@@ -265,7 +263,6 @@ const startApp = async () => {
   }
 
   const ecoapiKeys: Ecowittaccount[] = await Ecowittmodel.find({ api_type: "ecowitt" });
-  console.log(ecoapiKeys, "apikeys");
   for (const account of ecoapiKeys) {
     try {
       await createClientForEcoWittKey(account._id);
