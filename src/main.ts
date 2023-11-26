@@ -158,23 +158,23 @@ const startApp = async () => {
 
     const accountToken = account.token;
 
-    function getName(device:any) {
+    function getName(device: any) {
       return device.name;
     }
 
     let devices: any = [];
 
     try {
-      const data: { data :any} = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
+      const data: { data: any } = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${accountToken}`,
         },
       });
 
-      const toDb = data?.data?.map((device:any) => {
+      const toDb = data?.data?.map((device: any) => {
         return {
-          id:device.id,
+          id: device.id,
           deviceMAC: device.label,
           infos: {
             coords: {
@@ -201,7 +201,7 @@ const startApp = async () => {
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
-      
+
       const formattedDate = `${year}-${month}-${day}`;
       try {
         const res: any = await axios.get(`https://api.weatherxm.com/api/v1/me/devices/${val.id}/history?fromDate=${formattedDate}&toDate=${formattedDate}`, {
@@ -239,7 +239,7 @@ const startApp = async () => {
   console.log(ambientApiKeys, "ambient api keys");
   for (let account of ambientApiKeys) {
     try {
-      //await createClientForAmbientKey(account._id);
+      await createClientForAmbientKey(account._id);
     } catch (e: any) {
       console.log(
         `Error creating client for key ${account.api_key} - ${e.stack}`
@@ -298,16 +298,16 @@ const startApp = async () => {
 };
 
 const logEcoWitt = async (data: any, deviceInfo: any) => {
- 
+
   let fullData: EcoWittDeviceData = data.data;
   let storeD = fullData.data
   console.log(storeD)
   const toDb = new WeatherModel({
     timestamp: new Date(parseInt(fullData.time) * 1000),
-    temperature: storeD.outdoor?.temperature?.value ? +storeD.outdoor.temperature.value 
-                 : storeD.indoor?.temperature?.value ? +storeD.indoor.temperature.value : null,
-    humidity: storeD.outdoor?.humidity?.value ? +storeD.outdoor.humidity.value 
-              : storeD.indoor?.humidity?.value ? +storeD.indoor.humidity.value : null,
+    temperature: storeD.outdoor?.temperature?.value ? +storeD.outdoor.temperature.value
+      : storeD.indoor?.temperature?.value ? +storeD.indoor.temperature.value : null,
+    humidity: storeD.outdoor?.humidity?.value ? +storeD.outdoor.humidity.value
+      : storeD.indoor?.humidity?.value ? +storeD.indoor.humidity.value : null,
     windspeedmph: storeD.wind?.wind_speed?.value ? +storeD.wind.wind_speed.value : null,
     winddir: storeD.wind?.wind_direction?.value ? +storeD.wind.wind_direction.value : null,
     rainfall: storeD.rainfall?.daily?.value ? +storeD.rainfall.daily.value : null,
@@ -328,28 +328,18 @@ const logXM = async (data: any, deviceInfo: any) => {
   const condition =
     storeD.tz ||
     storeD.date ||
-    storeD.hourly 
+    storeD.hourly
   if (!condition) return;
-  const latest=storeD.hourly[storeD.hourly.length-1]
+  const latest = storeD.hourly[storeD.hourly.length - 1]
   const toDb = new WeatherModel({
     timestamp: new Date(latest.timestamp),
     temperature: +latest.temperature,
     winddir: +latest.wind_direction,
     windspeedmph: +latest.wind_speed,
-    // windgustmph: +latest.wind.wind_gust,
     humidity: +latest.humidity,
-    // humidityin: +latest.indoor.humidity.value,
-    // tempf: +latest.outdoor.temperature.value,
     uv: +latest.uv_index,
     solarradiation: +latest.solar_irradiance,
-    // co2: +latest.indoor_co2.co2.value,
-    // hourlyrainin: +latest.rainfall.hourly.value,
-    // dailyrainin: +latest.rainfall.daily.value,
-    // weeklyrainin: +latest.rainfall.weekly.value,
-    // monthlyrainin: +latest.rainfall.monthly.value,
-    // yearlyrainin: +latest.rainfall.yearly.value,
-    // eventrainin: +latest.rainfall.event.value,
-    // totalrainin: +latest.rainfall.rain_rate.value,
+    rainfall: +latest.rainfall.daily.value,
     metadata: {
       deviceMAC: deviceInfo.macAddress,
       location: {
@@ -357,22 +347,6 @@ const logXM = async (data: any, deviceInfo: any) => {
         lon: deviceInfo.infos.coords.lon,
       },
     },
-    // humidity1: +storeD.temp_and_humidity_ch1.humidity.value,
-    // humidity2: +storeD.temp_and_humidity_ch2.humidity.value,
-    // humidity3: +storeD.temp_and_humidity_ch3.humidity.value,
-    // humidity4: +storeD.temp_and_humidity_ch4.humidity.value,
-    // humidity5: +storeD.temp_and_humidity_ch5.humidity.value,
-    // humidity6: +storeD.temp_and_humidity_ch6.humidity.value,
-    // humidity7: +storeD.temp_and_humidity_ch7.humidity.value,
-    // humidity8: +storeD.temp_and_humidity_ch8.humidity.value,
-    // temp1f: +storeD.temp_ch1.temperature.value,
-    // temp2f: +storeD.temp_ch2.temperature.value,
-    // temp3f: +storeD.temp_ch3.temperature.value,
-    // temp4f: +storeD.temp_ch4.temperature.value,
-    // temp5f: +storeD.temp_ch5.temperature.value,
-    // temp6f: +storeD.temp_ch6.temperature.value,
-    // temp7f: +storeD.temp_ch7.temperature.value,
-    // temp8f: +storeD.temp_ch8.temperature.value,
   });
   await toDb.save();
 };
