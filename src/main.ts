@@ -24,10 +24,12 @@ const startApp = async () => {
   const createClientForAmbientKey = async (ObjectId: string) => {
     if (ambientClients.has(ObjectId)) return;
 
-    let account: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
-    if(!account) account = (await WeatherAccount.findById(ObjectId))! as Ambientaccount;
-      console.log(account, "account")
-      console.log(account.api_key, "account.api_key")
+    let accountData: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
+    if(!accountData){ accountData = (await WeatherAccount.findById(ObjectId))!;}
+    const account: Ambientaccount = accountData.toObject();
+      console.log(account)
+      console.log(account.timestamp)
+      console.log(account.api_key)
     const client = new ambient({
       apiKey: account.api_key,
       applicationKey: ambientApplicationKey,
@@ -62,8 +64,8 @@ const startApp = async () => {
       });
 
       if (account.devices !== toDb) {
-        account.devices = toDb;
-        account.save();
+        accountData.devices = toDb;
+        accountData.save();
       }
     });
     client.on("data", (data) => {
@@ -364,8 +366,8 @@ const logAmbient = async (data: ambient.DeviceData & { device: ambient.Device })
     metadata: {
       deviceMAC: data.device.macAddress,
       location: {
-        lat: data.device.info.coords.coords.lat,
-        lon: data.device.info.coords.coords.lon
+        lat: data.device.info?.coords?.coords?.lat,
+        lon: data.device.info?.coords?.coords?.lon
       }
     }
   });
