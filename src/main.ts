@@ -1,8 +1,7 @@
 import "dotenv/config";
 import ambient, { Device } from "ambient-weather-api";
-import { startApi } from "./api.js";
+import { startApi } from "./api/api.js";
 import { WeatherModel } from "./db/models/weather-schema.js";
-import { WeatherAccountModel } from "./db/models/weather_accounts.js";
 import { newApiKeyEvent } from "./db/connect.js";
 import axios from "axios";
 import {
@@ -10,6 +9,7 @@ import {
   EcoWittDeviceData,
   EcoWittDevicesResponse,
 } from "types/ecowittTypes.js";
+import { Ambientaccount, Ambientmodel, Ecowittaccount, Ecowittmodel, WXMaccount, WXMmodel, WeatherAccount } from "db/models/weather_accounts.js";
 
 const clients: Map<string, string> = new Map();
 const weatherXMClients: Map<string, string> = new Map();
@@ -24,7 +24,7 @@ const startApp = async () => {
   const createClientForAmbientKey = async (ObjectId: string) => {
     if (ambientClients.has(ObjectId)) return;
 
-    const account = (await WeatherAccountModel.findById(ObjectId))!;
+    const account: Ambientaccount = (await Ambientmodel.findById(ObjectId))!;
     const client = new ambient({
       apiKey: account.api_key,
       applicationKey: ambientApplicationKey,
@@ -82,7 +82,7 @@ const startApp = async () => {
   const createClientForEcoWittKey = async (ObjectId: string) => {
     if (clients.has(ObjectId)) return;
 
-    const account = (await WeatherAccountModel.findById(ObjectId))!;
+    const account: Ecowittaccount = (await Ecowittmodel.findById(ObjectId))!;
 
     const accountApiKey = account.api_key;
 
@@ -154,7 +154,7 @@ const startApp = async () => {
   const createClientForWeatherXM = async (ObjectId: string) => {
     if (weatherXMClients.has(ObjectId)) return;
 
-    const account = (await WeatherAccountModel.findById(ObjectId))!;
+    const account: WXMaccount = (await Ecowittmodel.findById(ObjectId))!;
 
     const accountToken = account.token;
 
@@ -232,13 +232,13 @@ const startApp = async () => {
     return;
   };
 
-  const ambientApiKeys = await WeatherAccountModel.find({
+  const ambientApiKeys: Ambientaccount[] = await Ambientmodel.find({
     api_type: {
       $in: ["ambient"],
     },
   });
   console.log(ambientApiKeys, "ambient api keys");
-  for (const account of ambientApiKeys) {
+  for (let account of ambientApiKeys) {
     try {
       //await createClientForAmbientKey(account._id);
     } catch (e: any) {
@@ -247,7 +247,7 @@ const startApp = async () => {
       );
     }
   }
-  const xmTokens = await WeatherAccountModel.find({
+  const xmTokens: WXMaccount[] = await WXMmodel.find({
     api_type: {
       $in: ["weather-xm"],
     },
@@ -258,14 +258,14 @@ const startApp = async () => {
       await createClientForWeatherXM(account._id);
     } catch (e: any) {
       console.log(
-        `Error creating client for key ${account.api_key} - ${e.stack}`
+        `Error creating client for key ${account.token} - ${e.stack}`
       );
     }
   }
 
-  const apiKeys = await WeatherAccountModel.find({ api_type: "ecowitt" });
-  console.log(apiKeys, "apikeys");
-  for (const account of apiKeys) {
+  const ecoapiKeys: Ecowittaccount[] = await Ecowittmodel.find({ api_type: "ecowitt" });
+  console.log(ecoapiKeys, "apikeys");
+  for (const account of ecoapiKeys) {
     try {
       await createClientForEcoWittKey(account._id);
     } catch (e: any) {
@@ -276,7 +276,7 @@ const startApp = async () => {
   }
 
   newApiKeyEvent.on("newApiKey", async (ObjectId: string) => {
-    const findedApikey = await WeatherAccountModel.findById(ObjectId);
+    const findedApikey = await WeatherAccount.findById(ObjectId);
     if (findedApikey?.api_type === "ecowitt") {
       await createClientForEcoWittKey(ObjectId);
     } else if (findedApikey?.api_type === "weather-xm") {
@@ -287,7 +287,7 @@ const startApp = async () => {
   });
 
   newApiKeyEvent.on("deleteApiKey", async (ObjectId: string) => {
-    const findedApikey = await WeatherAccountModel.findById(ObjectId);
+    const findedApikey = await WeatherAccount.findById(ObjectId);
     if (findedApikey?.api_type === "ecowitt") {
       clients.delete(ObjectId);
     } else if (findedApikey?.api_type === "weather-xm") {

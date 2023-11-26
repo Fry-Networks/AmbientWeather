@@ -1,10 +1,8 @@
 import mongoose, { mongo } from "mongoose";
-export const weatherAccountsSchema = new mongoose.Schema({
+export const weatherAccountSchema = new mongoose.Schema({
   user_id: mongoose.Schema.Types.ObjectId,
   timestamp: Date,
-  api_key: { type: String, default: null, required: false },
   api_type: String,
-  app_key: { type: String, default: null, required: false },
   devices: {
     type: [
       {
@@ -22,13 +20,14 @@ export const weatherAccountsSchema = new mongoose.Schema({
   },
 });
 
+export const WeatherAccount = mongoose.model('weather_accounts', weatherAccountSchema);
+
 export interface weatherAccount extends mongoose.Document {
   user_id: mongoose.Schema.Types.ObjectId | string;
   timestamp: Date;
-  api_key?: string;
+  
   api_type: string;
-  app_key?: string;
-  token: string;
+
   devices: {
     deviceMAC: string;
     infos: {
@@ -40,8 +39,33 @@ export interface weatherAccount extends mongoose.Document {
     };
   }[];
 }
+const WXMaccountSchema = new mongoose.Schema({
+  token: { type: String, required: true },
+});
+export const WXMmodel = WeatherAccount.discriminator('WXMaccount', WXMaccountSchema);
 
-export const WeatherAccountModel = mongoose.model<weatherAccount>(
-  "weather_accounts",
-  weatherAccountsSchema
-);
+const AmbientaccountSchema = new mongoose.Schema({
+  api_key: { type: String, required: true },
+});
+export const Ambientmodel = WeatherAccount.discriminator('Ambientaccount', AmbientaccountSchema);
+
+const EcowittaccountSchema = new mongoose.Schema({
+  api_key: { type: String, required: true },
+  app_key: { type: String, required: true },
+});
+export const Ecowittmodel = WeatherAccount.discriminator('Ecowittaccount', EcowittaccountSchema);
+
+
+export interface WXMaccount extends weatherAccount {
+  api_type: "wxm";
+  token: string;
+}
+export interface Ambientaccount extends weatherAccount {
+  api_type: "ambient";
+  api_key: string;
+}
+export interface Ecowittaccount extends weatherAccount {
+  api_type: "ecowitt";
+  api_key: string;
+  app_key: string;
+}
