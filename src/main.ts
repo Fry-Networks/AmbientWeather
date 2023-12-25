@@ -14,7 +14,7 @@ const startApp = async () => {
     startApi();
 
     // Handling for Ambient devices
-    const ambientApiKeys: Ambientaccount[] = await WeatherAccount.find({ api_type: { $in: ["ambient"] } });
+ /*   const ambientApiKeys: Ambientaccount[] = await WeatherAccount.find({ api_type: { $in: ["ambient"] } });
     for (let account of ambientApiKeys) {
         try {
             await createClientForAmbientKey(ambientClients, account._id);
@@ -34,7 +34,7 @@ const startApp = async () => {
             console.log(`Error creating client for key ${account.token} - ${e.stack}`);
         }
     }
-
+*/
     // Handling for EcoWitt devices
     const ecoapiKeys: Ecowittaccount[] = await Ecowittmodel.find({ api_type: "ecowitt" });
     for (const account of ecoapiKeys) {

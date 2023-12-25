@@ -80,6 +80,11 @@ export const createClientForEcoWittKey = async (clients: Map<string, string>, Ob
 const logEcoWitt = async (data: any, deviceInfo: any) => {
     let fullData: EcoWittDeviceData = data.data;
     let storeD = fullData.data
+    //log the device if all weather fields are null
+    if(fullData.code !== 0) {
+        console.log("Error with device", deviceInfo.infos.name, fullData.msg);
+        return;
+    }
     const toDb = new WeatherModel({
         timestamp: new Date(parseInt(fullData.time) * 1000),
         temperature: storeD.outdoor?.temperature?.value ? +storeD.outdoor.temperature.value
