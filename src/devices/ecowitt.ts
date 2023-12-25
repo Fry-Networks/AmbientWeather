@@ -2,7 +2,7 @@
 import axios from "axios";
 import { Ecowittaccount, Ecowittmodel } from "../db/models/weather_accounts.js";
 import { WeatherModel } from "../db/models/weather-schema.js";
-import { EcoWittDevice, EcoWittDeviceData, EcoWittDevicesResponse } from "types/ecowittTypes.js";
+import { EcoWittDevice, EcoWittDeviceData, EcoWittDevicesResponse } from "../types/ecowittTypes.js";
 
 export const createClientForEcoWittKey = async (clients: Map<string, string>, ObjectId: string) => {
     if (clients.has(ObjectId)) return;
