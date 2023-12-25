@@ -46,6 +46,7 @@ const weatherSchema = new mongoose.Schema(
         totalrainin: { type: Number, required: false },
         ...sensorFields,
         metadata: {
+            type: String,
             deviceMAC: String,
             location: {
                 lat: Number,
@@ -90,6 +91,7 @@ export interface WeatherData extends mongoose.Document {
     eventrainin?: number;
     totalrainin?: number;
     metadata: {
+        type: string;
         deviceMAC: string;
         location: {
             lat: number;
