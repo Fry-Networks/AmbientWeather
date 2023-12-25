@@ -91,7 +91,7 @@ const logEcoWitt = async (data: any, deviceInfo: any) => {
         rainfall: storeD.rainfall?.daily?.value ? +storeD.rainfall.daily.value : null,
         metadata: {
             type: 'ecowitt',
-            deviceMAC: deviceInfo.macAddress,
+            deviceMAC: deviceInfo.macAddress || "N/A",
             location: {
                 lat: deviceInfo.infos.coords.lat,
                 lon: deviceInfo.infos.coords.lon

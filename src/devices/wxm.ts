@@ -105,7 +105,7 @@ const logXM = async (data: any, deviceInfo: any) => {
         rainfall: +latest.rainfall.daily.value,
         metadata: {
             type: 'weather-xm',
-            deviceMAC: deviceInfo.macAddress,
+            deviceMAC: deviceInfo.macAddress || "N/A",
             location: {
                 lat: deviceInfo.infos.coords.lat,
                 lon: deviceInfo.infos.coords.lon,
