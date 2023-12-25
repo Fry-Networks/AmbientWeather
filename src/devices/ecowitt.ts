@@ -70,7 +70,7 @@ export const createClientForEcoWittKey = async (clients: Map<string, string>, Ob
         await Promise.all(devices?.map((val: any) => fetchDeviceData(val)));
     };
 
-    setInterval(fetchInterval, 1000);
+    setInterval(fetchInterval, 60000);
 
     clients.set(ObjectId, accountApiKey);
 
