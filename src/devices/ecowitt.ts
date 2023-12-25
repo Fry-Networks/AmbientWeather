@@ -90,7 +90,7 @@ const logEcoWitt = async (data: any, deviceInfo: any) => {
         winddir: storeD.wind?.wind_direction?.value ? +storeD.wind.wind_direction.value : null,
         rainfall: storeD.rainfall?.daily?.value ? +storeD.rainfall.daily.value : null,
         metadata: {
-            type: 'ecowitt',
+            data_type: 'ecowitt',
             deviceMAC: deviceInfo.macAddress || "N/A",
             location: {
                 lat: deviceInfo.infos.coords.lat,

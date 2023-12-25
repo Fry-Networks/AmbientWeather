@@ -65,7 +65,7 @@ const logAmbient = async (data: ambient.DeviceData & { device: ambient.Device })
         winddir: data.winddir,
         rainfall: data.dailyrainin,
         metadata: {
-            type: "ambient",
+            data_type: "ambient",
             deviceMAC: data.device.macAddress || "N/A",
             location: {
                 lat: data.device.info?.coords?.coords?.lat,
