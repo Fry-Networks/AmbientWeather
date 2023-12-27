@@ -41,6 +41,7 @@ export interface weatherAccount extends mongoose.Document {
 }
 const WXMaccountSchema = new mongoose.Schema({
   token: { type: String, required: true },
+  refresh_token: { type: String, required: true },
 });
 export const WXMmodel = WeatherAccount.discriminator('WXMaccount', WXMaccountSchema);
 
@@ -59,6 +60,7 @@ export const Ecowittmodel = WeatherAccount.discriminator('Ecowittaccount', Ecowi
 export interface WXMaccount extends weatherAccount {
   api_type: "wxm";
   token: string;
+  refresh_token: string;
 }
 export interface Ambientaccount extends weatherAccount {
   api_type: "ambient";

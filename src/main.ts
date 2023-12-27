@@ -11,8 +11,8 @@ const ecowittClients: Map<string, string> = new Map();
 const wxmClients: Map<string, string> = new Map();
 const ambientClients: Map<string, ambient> = new Map();
 const startApp = async () => {
-    startApi();
-
+    await startApi();
+  
     // Handling for Ambient devices
     const ambientApiKeys: Ambientaccount[] = await WeatherAccount.find({ api_type: { $in: ["ambient"] } });
     for (let account of ambientApiKeys) {
@@ -25,15 +25,7 @@ const startApp = async () => {
     }
 
     // Handling for WeatherXM devices
-    const xmTokens: WXMaccount[] = await WXMmodel.find({ api_type: { $in: ["weather-xm"] } });
-    for (const account of xmTokens) {
-        try {
-            await createClientForWeatherXM(wxmClients, account._id);
-        }
-        catch (e: any) {
-            console.log(`Error creating client for key ${account.token} - ${e.stack}`);
-        }
-    }
+    
 
     // Handling for EcoWitt devices
     const ecoapiKeys: Ecowittaccount[] = await Ecowittmodel.find({ api_type: "ecowitt" });
@@ -43,6 +35,16 @@ const startApp = async () => {
         }
         catch (e: any) {
             console.log(`Error creating client for key ${account.api_key} - ${e.stack}`);
+        }
+    }
+    
+    const xmTokens: WXMaccount[] = await WXMmodel.find({ api_type: { $in: ["weather-xm"] } });
+    for (const account of xmTokens) {
+        try {
+            await createClientForWeatherXM(wxmClients, account._id);
+        }
+        catch (e: any) {
+            console.log(`Error creating client for key ${account.token} - ${e.stack}`);
         }
     }
 

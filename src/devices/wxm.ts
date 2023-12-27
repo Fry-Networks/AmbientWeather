@@ -7,46 +7,65 @@ import { Ecowittmodel } from "../db/models/weather_accounts.js";
 export const createClientForWeatherXM = async (wxmClients: Map<string, string>, ObjectId: string) => {
     if (wxmClients.has(ObjectId)) return;
 
-    const account: WXMaccount = (await Ecowittmodel.findById(ObjectId))!;
+    const account: WXMaccount = (await WXMmodel.findById(ObjectId))!;
 
-    const accountToken = account.token;
+    let accountToken = account.token;
 
     function getName(device: any) {
         return device.name;
     }
 
     let devices: any = [];
-
-    try {
-        const data: { data: any } = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
-            headers: {
-                'accept': 'application/json',
-                'Authorization': `Bearer ${accountToken}`,
-            },
-        });
-
-        const toDb = data?.data?.map((device: any) => {
-            return {
-                id: device.id,
-                deviceMAC: device.label,
-                infos: {
-                    coords: {
-                        lat: device.location.lat,
-                        lon: device.location.lon,
-                    },
-                    name: device.name,
+    let firstTime = true;
+    const fetchDevices = async () => {
+        try {
+            const data: { data: any } = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
+                headers: {
+                    'accept': 'application/json',
+                    'Authorization': `Bearer ${accountToken}`,
                 },
-            };
-        });
+            });
 
-        if (account.devices !== toDb) {
-            account.devices = toDb;
-            account.save();
-            devices = toDb;
+            const toDb = data?.data?.map((device: any) => {
+                return {
+                    id: device.id,
+                    deviceMAC: device.label,
+                    infos: {
+                        coords: {
+                            lat: device.location.lat,
+                            lon: device.location.lon,
+                        },
+                        name: device.name,
+                    },
+                };
+            });
+            console.log(toDb)
+            if (account.devices !== toDb) {
+
+                account.devices = toDb;
+                account.save();
+                devices = toDb;
+            }
+        } catch (error: any) {
+            if (error.response.status === 401 && firstTime) {
+                console.error(error.response.data);
+                console.log('Refreshing token');
+                const newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
+
+                        refreshToken: account.refresh_token,
+    
+                });
+                console.log(newToken.data.token);
+                account.token = newToken.data.token;
+                account.save();
+                accountToken = newToken.data.token;
+                fetchDevices();
+                firstTime = false;
+            } else {
+                console.error(error.response.data);
+            }
         }
-    } catch (error) {
-        console.error(error);
-    }
+    };
 
     const fetchDeviceData = async (val: any) => {
         const today = new Date();
