@@ -5,8 +5,8 @@ import { WeatherModel } from "../db/models/weather-schema.js";
 import { Ecowittmodel } from "../db/models/weather_accounts.js";
 
 export const createClientForWeatherXM = async (wxmClients: Map<string, string>, ObjectId: string) => {
+    console.log('Creating client for WeatherXM');
     if (wxmClients.has(ObjectId)) return;
-
     const account: WXMaccount = (await WXMmodel.findById(ObjectId))!;
 
     let accountToken = account.token;
@@ -19,6 +19,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
     let firstTime = true;
     const fetchDevices = async () => {
         try {
+            console.log('Fetching devices');
             const data: { data: any } = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
                 headers: {
                     'accept': 'application/json',
@@ -47,25 +48,34 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                 devices = toDb;
             }
         } catch (error: any) {
-            if (error.response.status === 401 && firstTime) {
-                console.error(error.response.data);
+            console.log("Error fetching devices")
+            console.log(error.response.data)
+            if (error.response.status === 401 && firstTime && account.refresh_token) {
                 console.log('Refreshing token');
-                const newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
+                let newToken;
+                try {
+                    newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
 
                         refreshToken: account.refresh_token,
-    
-                });
-                console.log(newToken.data.token);
-                account.token = newToken.data.token;
-                account.save();
-                accountToken = newToken.data.token;
-                fetchDevices();
-                firstTime = false;
+
+                    });
+                } catch (error: any) {
+                    console.log(error.response.data)
+                }
+                console.log("REFRESHED");
+                account.token = newToken?.data.token;
+                await account.save();
+                accountToken = newToken?.data.token;
+                    firstTime = false;
+
+                return void fetchDevices();
+
             } else {
-                console.error(error.response.data);
+                // console.error(error.response.data);
             }
         }
     };
+    fetchDevices();
 
     const fetchDeviceData = async (val: any) => {
         const today = new Date();
@@ -96,7 +106,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
         if (!Array.isArray(devices) || devices?.length === 0) return;
         await Promise.all(devices?.map((val: any) => fetchDeviceData(val)));
     };
-
+    devices?.map((val: any) => fetchDeviceData(val));
     setInterval(fetchInterval, 300000);
     // devices?.map((val: any) => fetchDeviceData(val))
     wxmClients.set(ObjectId, accountToken);
