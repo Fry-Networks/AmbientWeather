@@ -52,21 +52,8 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             console.log(error.response.data)
             if (error.response.status === 401 && firstTime && account.refresh_token) {
                 console.log('Refreshing token');
-                let newToken;
-                try {
-                    newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
-
-                        refreshToken: account.refresh_token,
-
-                    });
-                } catch (error: any) {
-                    console.log(error.response.data)
-                }
-                console.log("REFRESHED");
-                account.token = newToken?.data.token;
-                await account.save();
-                accountToken = newToken?.data.token;
-                    firstTime = false;
+                await refreshToken(account);
+                firstTime = false;
 
                 return void fetchDevices();
 
@@ -76,6 +63,19 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
         }
     };
     fetchDevices();
+
+    const refreshToken = async (account: WXMaccount) => {
+        try {
+            const newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
+                refreshToken: account.refresh_token,
+            });
+            account.token = newToken?.data.token;
+            await account.save();
+            accountToken = newToken?.data.token;
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     const fetchDeviceData = async (val: any) => {
         const today = new Date();
@@ -96,7 +96,11 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             //   `https://api.ecowitt.net/api/v3/device/real_time?application_key=${accountAppKey}&api_key=${accountApiKey}&mac=${val?.deviceMAC}&call_back=all`
             // );
             logXM(res.data, val);
-        } catch (error) {
+        } catch (error: any) {
+            if (error?.response.status === 401 && account.refresh_token) {
+                await refreshToken(account);
+                return void fetchDeviceData(val);
+            }
             console.error(error);
         }
     };
