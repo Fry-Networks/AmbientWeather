@@ -59,12 +59,14 @@ router.post("/api/submitXMToken", async function (req, res) {
           status: "SUCCESS",
         });
         } catch (error:any) {
+          console.log(error);
           res.status(400).send({
             message: error.response.data.message,
             status: "ERROR",
           });
         }
       } catch (e) {
+        console.log(e);
         res.status(500).send({
           message: "Internal server error.",
           status: "ERROR",
