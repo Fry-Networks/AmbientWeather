@@ -13,7 +13,12 @@ router.post("/api/submitXMToken", async function (req, res) {
           address: string;
         } = req.body;
         try {
-          const loginResponse:any =await axios.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password})
+          const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+        };
+          const loginResponse:any =await axios.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password}, {
+            headers: headers
+          })
         // console.log(loginResponse);
         // Check if the token is already in the database
         const existingToken = await WXMmodel.exists({ refresh_token: loginResponse.data.refreshToken });
