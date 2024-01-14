@@ -41,7 +41,7 @@ const startApp = async () => {
     const xmTokens: WXMaccount[] = await WXMmodel.find({ api_type: { $in: ["weather-xm"] } });
      for (const account of xmTokens) {
         try {
-            await createClientForWeatherXM(wxmClients, account._id);
+           // await createClientForWeatherXM(wxmClients, account._id);
         }
         catch (e: any) {
             console.log(`Error creating client for key ${account.token} - ${e.stack}`);
