@@ -7,7 +7,13 @@ import { SocksProxyAgent } from 'socks-proxy-agent';
 import 'dotenv/config';
 
 const router = express.Router();
-
+const proxy = process.env.PROXY;
+        const agent = new SocksProxyAgent(
+          'socks://' + proxy
+          );
+const proxyInstance = axios.create({
+  httpsAgent: agent,
+});
 router.post("/api/submitXMToken", async function (req, res) {
     try {
         const data: {
@@ -19,13 +25,9 @@ router.post("/api/submitXMToken", async function (req, res) {
           const headers = {
             'User-Agent': new UserAgent().toString(),
         };
-        const proxy = process.env.PROXY;
-        const agent = new SocksProxyAgent(
-          'socks://' + proxy
-          );
-          const loginResponse:any =await axios.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password}, {
+        
+          const loginResponse:any =await proxyInstance.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password}, {
             headers: headers,
-            httpsAgent: agent
           })
         // console.log(loginResponse);
         // Check if the token is already in the database
@@ -40,14 +42,13 @@ router.post("/api/submitXMToken", async function (req, res) {
         // Check if the key is valid by making a request to the API
         //https://rt.ambientweather.net/v1/devices?applicationKey=&apiKey=
         try {
-          const response = await axios.get(
+          const response = await proxyInstance.get(
             'https://api.weatherxm.com/api/v1/me',
             {
               headers: {
                 Authorization: `Bearer ${loginResponse.data.token}`,
                 'User-Agent': new UserAgent().toString(),
               },
-              httpAgent: agent
             }
           );
         } catch (e) {
