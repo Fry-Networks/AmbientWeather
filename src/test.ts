@@ -10,17 +10,10 @@ const agent = new SocksProxyAgent(
     );
 console.log(agent)
 
-// Create an instance of the Axios client with the proxy configuration
-const axiosInstance = axios.create({
-    //@ts-ignore
-    httpsAgent: agent,
-    headers: {
-        'User-Agent': new UserAgent().toString(),
-    }
-});
-
 // Make the POST request using the configured Axios instance
-axiosInstance.get('https://api.ipify.org?format=json')
+axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
+  refreshToken: "REDACTED_ROTATE_ME"
+})
   .then((loginResponse) => {
     // Handle the response
     console.log(loginResponse.data);
