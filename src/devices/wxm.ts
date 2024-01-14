@@ -10,7 +10,7 @@ const proxy = process.env.PROXY;
 const agent = new SocksProxyAgent(
     'socks://' + proxy
     );
-
+console.log(agent)
 
 export const createClientForWeatherXM = async (wxmClients: Map<string, string>, ObjectId: string) => {
     console.log('Creating client for WeatherXM');
@@ -68,7 +68,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                 return void fetchDevices();
 
             } else {
-                // console.error(error.response.data);
+                 console.error(error.response.data);
             }
         }
     };
@@ -88,6 +88,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             await account.save();
             accountToken = newToken?.data.token;
         } catch (error) {
+            console.log('Error refreshing token')
             console.error(error);
         }
     }
