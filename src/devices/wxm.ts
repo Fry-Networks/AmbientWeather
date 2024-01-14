@@ -38,7 +38,6 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                     'User-Agent': new UserAgent().toString(),
                 },
             });
-            console.log(req)
 
             const toDb = req.data?.data?.map((device: any) => {
                 return {
@@ -53,8 +52,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                     },
                 };
             });
-            console.log(toDb)
-            if (account.devices !== toDb) {
+            if (toDb && account.devices !== toDb) {
 
                 account.devices = toDb;
                 account.save();
@@ -62,7 +60,6 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             }
         } catch (error: any) {
             console.log("Error fetching devices")
-            console.log(error.response)
             if (error.response.status === 401 && firstTime && account.refresh_token) {
                 console.log('Refreshing token');
                 await refreshToken(account);
