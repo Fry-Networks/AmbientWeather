@@ -46,6 +46,7 @@ const startApp = async () => {
         catch (e: any) {
             console.log(`Error creating client for key ${account.token} - ${e.stack}`);
         }
+        return;
     }
 
     newApiKeyEvent.on("newApiKey", async (ObjectId: string) => {
