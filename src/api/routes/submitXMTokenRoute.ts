@@ -52,6 +52,7 @@ router.post("/api/submitXMToken", async function (req, res) {
             }
           );
         } catch (e) {
+          console.log(e);
           return void res.status(401).send({
             message: "Token is invalid. (Didn't pass API check)",
             status: "ERROR",
