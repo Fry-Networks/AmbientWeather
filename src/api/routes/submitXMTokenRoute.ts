@@ -15,6 +15,7 @@ const proxyInstance = axios.create({
   httpsAgent: agent,
 });
 router.post("/api/submitXMToken", async function (req, res) {
+  console.log("Received request to submit XM Token");
     try {
         const data: {
           username: string;
