@@ -28,7 +28,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
     const fetchDevices = async () => {
         try {
             console.log('Fetching devices');
-            const data: { data: any } = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
+            const req = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
                 headers: {
                     'accept': 'application/json',
                     'Authorization': `Bearer ${accountToken}`,
@@ -36,8 +36,9 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                 },
                 httpAgent: agent
             });
+            console.log(req)
 
-            const toDb = data?.data?.map((device: any) => {
+            const toDb = req.data?.data?.map((device: any) => {
                 return {
                     id: device.id,
                     deviceMAC: device.label,
