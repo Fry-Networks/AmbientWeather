@@ -77,19 +77,22 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
     const refreshToken = async (account: WXMaccount) => {
         try {
             const newToken = await proxyInstance.post('https://api.weatherxm.com/api/v1/auth/refresh', {
+                refreshToken: account.refresh_token,
+            }, {
                 headers: {
+                    'accept': 'application/json',
                     'User-Agent': new UserAgent().toString(),
                 },
-                data: {
-                    refreshToken: account.refresh_token
-                }
             });
+
             account.token = newToken?.data.token;
             await account.save();
             accountToken = newToken?.data.token;
-        } catch (error) {
+        } catch (error: any) {
             console.log('Error refreshing token')
-            console.error(error);
+            if(error.response.data.code === "InvalidAccessToken") {
+                console.log("Invalid access token")
+            }
         }
     }
 
