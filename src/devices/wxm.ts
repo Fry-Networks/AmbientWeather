@@ -90,6 +90,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             accountToken = newToken?.data.token;
         } catch (error: any) {
             console.log('Error refreshing token')
+            console.error(error.response.data);
             if(error.response.data.code === "InvalidAccessToken") {
                 console.log("Invalid access token")
             }
