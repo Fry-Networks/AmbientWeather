@@ -5,6 +5,7 @@ import { WXMmodel } from "../../db/models/weather_accounts.js";
 import { getUserByAddress } from "../../db/models/users-schema.js";
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import 'dotenv/config';
+import { newApiKeyEvent } from "db/connect.js";
 
 const router = express.Router();
 const proxy = process.env.PROXY;
@@ -71,7 +72,7 @@ router.post("/api/submitXMToken", async function (req, res) {
           timestamp: new Date(),
         });
         await key.save();
-    
+        newApiKeyEvent.emit("newApiKey", key._id);
         res.status(200).send({
           message:
             "Successfully linked your Token to your wallet address!\nWe will soon begin to retreive data from your weather stations/devices.",
