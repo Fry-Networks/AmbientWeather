@@ -5,7 +5,7 @@ import { WXMmodel } from "../../db/models/weather_accounts.js";
 import { getUserByAddress } from "../../db/models/users-schema.js";
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import 'dotenv/config';
-import { newApiKeyEvent } from "db/connect.js";
+import { newApiKeyEvent } from "../../db/connect.js";
 
 const router = express.Router();
 const proxy = process.env.PROXY;
