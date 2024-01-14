@@ -1,7 +1,10 @@
 import express from "express";
 import axios from "axios";
+import UserAgent from 'user-agents';
 import { WXMmodel } from "../../db/models/weather_accounts.js";
 import { getUserByAddress } from "../../db/models/users-schema.js";
+import { SocksProxyAgent } from 'socks-proxy-agent';
+import 'dotenv/config';
 
 const router = express.Router();
 
@@ -14,10 +17,15 @@ router.post("/api/submitXMToken", async function (req, res) {
         } = req.body;
         try {
           const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+            'User-Agent': new UserAgent().toString(),
         };
+        const proxy = process.env.PROXY;
+        const agent = new SocksProxyAgent(
+          'socks://' + proxy
+          );
           const loginResponse:any =await axios.post('https://api.weatherxm.com/api/v1/auth/login',{username:data.username, password:data.password}, {
-            headers: headers
+            headers: headers,
+            httpsAgent: agent
           })
         // console.log(loginResponse);
         // Check if the token is already in the database
@@ -37,7 +45,9 @@ router.post("/api/submitXMToken", async function (req, res) {
             {
               headers: {
                 Authorization: `Bearer ${loginResponse.data.token}`,
+                'User-Agent': new UserAgent().toString(),
               },
+              httpAgent: agent
             }
           );
         } catch (e) {

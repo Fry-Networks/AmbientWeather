@@ -3,6 +3,14 @@ import axios from "axios";
 import { WXMaccount, WXMmodel } from "../db/models/weather_accounts.js";
 import { WeatherModel } from "../db/models/weather-schema.js";
 import { Ecowittmodel } from "../db/models/weather_accounts.js";
+import 'dotenv/config';
+import { SocksProxyAgent } from "socks-proxy-agent";
+import UserAgent from "user-agents";
+const proxy = process.env.PROXY;
+const agent = new SocksProxyAgent(
+    'socks://' + proxy
+    );
+
 
 export const createClientForWeatherXM = async (wxmClients: Map<string, string>, ObjectId: string) => {
     console.log('Creating client for WeatherXM');
@@ -24,7 +32,9 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                 headers: {
                     'accept': 'application/json',
                     'Authorization': `Bearer ${accountToken}`,
+                    'User-Agent': new UserAgent().toString(),
                 },
+                httpAgent: agent
             });
 
             const toDb = data?.data?.map((device: any) => {
@@ -68,6 +78,11 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
         try {
             const newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
                 refreshToken: account.refresh_token,
+            }, {
+                headers: {
+                    'User-Agent': new UserAgent().toString(),
+                },
+                httpAgent: agent
             });
             account.token = newToken?.data.token;
             await account.save();
@@ -90,7 +105,9 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
                 headers: {
                     'accept': 'application/json',
                     'Authorization': `Bearer ${accountToken}`,
+                    'User-Agent': new UserAgent().toString(),
                 },
+                httpAgent: agent
             });
             // axios.get(
             //   `https://api.ecowitt.net/api/v3/device/real_time?application_key=${accountAppKey}&api_key=${accountApiKey}&mac=${val?.deviceMAC}&call_back=all`
