@@ -10,6 +10,9 @@ const proxy = process.env.PROXY;
 const agent = new SocksProxyAgent(
     'socks://' + proxy
     );
+const proxyInstance = axios.create({
+    httpsAgent: agent,
+});
 console.log(agent)
 
 export const createClientForWeatherXM = async (wxmClients: Map<string, string>, ObjectId: string) => {
@@ -28,13 +31,12 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
     const fetchDevices = async () => {
         try {
             console.log('Fetching devices');
-            const req = await axios.get('https://api.weatherxm.com/api/v1/me/devices', {
+            const req = await proxyInstance.get('https://api.weatherxm.com/api/v1/me/devices', {
                 headers: {
                     'accept': 'application/json',
                     'Authorization': `Bearer ${accountToken}`,
                     'User-Agent': new UserAgent().toString(),
                 },
-                httpAgent: agent
             });
             console.log(req)
 
@@ -60,7 +62,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             }
         } catch (error: any) {
             console.log("Error fetching devices")
-            console.log(error.response.data)
+            console.log(error.response)
             if (error.response.status === 401 && firstTime && account.refresh_token) {
                 console.log('Refreshing token');
                 await refreshToken(account);
@@ -77,11 +79,10 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
 
     const refreshToken = async (account: WXMaccount) => {
         try {
-            const newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
+            const newToken = await proxyInstance.post('https://api.weatherxm.com/api/v1/auth/refresh', {
                 headers: {
                     'User-Agent': new UserAgent().toString(),
                 },
-                httpAgent: agent,
                 data: {
                     refreshToken: account.refresh_token
                 }
@@ -104,13 +105,12 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
 
         const formattedDate = `${year}-${month}-${day}`;
         try {
-            const res: any = await axios.get(`https://api.weatherxm.com/api/v1/me/devices/${val.id}/history?fromDate=${formattedDate}&toDate=${formattedDate}`, {
+            const res: any = await proxyInstance.get(`https://api.weatherxm.com/api/v1/me/devices/${val.id}/history?fromDate=${formattedDate}&toDate=${formattedDate}`, {
                 headers: {
                     'accept': 'application/json',
                     'Authorization': `Bearer ${accountToken}`,
                     'User-Agent': new UserAgent().toString(),
                 },
-                httpAgent: agent
             });
             // axios.get(
             //   `https://api.ecowitt.net/api/v3/device/real_time?application_key=${accountAppKey}&api_key=${accountApiKey}&mac=${val?.deviceMAC}&call_back=all`
