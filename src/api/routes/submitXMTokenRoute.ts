@@ -42,6 +42,7 @@ router.post("/api/submitXMToken", async function (req, res) {
         // Check if the key is valid by making a request to the API
         //https://rt.ambientweather.net/v1/devices?applicationKey=&apiKey=
         try {
+          console.log(loginResponse.data.token)
           const response = await proxyInstance.get(
             'https://api.weatherxm.com/api/v1/me',
             {
