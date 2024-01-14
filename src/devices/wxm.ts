@@ -77,12 +77,13 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
     const refreshToken = async (account: WXMaccount) => {
         try {
             const newToken = await axios.post('https://api.weatherxm.com/api/v1/auth/refresh', {
-                refreshToken: account.refresh_token,
-            }, {
                 headers: {
                     'User-Agent': new UserAgent().toString(),
                 },
-                httpAgent: agent
+                httpAgent: agent,
+                data: {
+                    refreshToken: account.refresh_token
+                }
             });
             account.token = newToken?.data.token;
             await account.save();
