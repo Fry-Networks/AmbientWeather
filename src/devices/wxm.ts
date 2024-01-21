@@ -86,6 +86,7 @@ export const createClientForWeatherXM = async (wxmClients: Map<string, string>, 
             });
 
             account.token = newToken?.data.token;
+            account.refresh_token = newToken?.data.refreshToken;
             await account.save();
             accountToken = newToken?.data.token;
         } catch (error: any) {
