@@ -6,6 +6,7 @@ export const weatherAccountSchema = new mongoose.Schema({
   devices: {
     type: [
       {
+        id: { type: String, required: false },
         deviceMAC: String,
         infos: {
           coords: {
@@ -29,6 +30,7 @@ export interface weatherAccount extends mongoose.Document {
   api_type: string;
 
   devices: {
+    id?: string
     deviceMAC: string;
     infos: {
       coords: {
