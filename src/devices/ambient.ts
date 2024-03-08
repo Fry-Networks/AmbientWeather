@@ -33,6 +33,7 @@ export const createClientForAmbientKey = async (ambientClients: Map<string, ambi
         const toDb = data.devices.filter(device => device.info.coords).map((device) => {
             return {
                 deviceMAC: device.macAddress,
+                data_type: "ambient",
                 infos: {
                     coords: {
                         lat: device.info.coords.coords.lat,
