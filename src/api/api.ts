@@ -1,10 +1,11 @@
-import express from "express";
 import bodyparser from "body-parser";
+import express from "express";
 import { rateLimit } from "express-rate-limit";
 import { connect } from "../db/connect.js";
-import submitKeyRoute from "./routes/submitKeyRoute.js";
-import submitXMTokenRoute from "./routes/submitXMTokenRoute.js";
 import submitEcoKeyRoute from "./routes/submitEcoKeyRoute.js";
+import submitKeyRoute from "./routes/submitKeyRoute.js";
+import submitSensecapRoute from "./routes/submitSensecapRoute.js";
+import submitXMTokenRoute from "./routes/submitXMTokenRoute.js";
 
 const app = express();
 app.use(bodyparser.json());
@@ -36,6 +37,7 @@ app.get("/", function (req, res) {
 app.use(submitKeyRoute);
 app.use(submitXMTokenRoute);
 app.use(submitEcoKeyRoute);
+app.use(submitSensecapRoute);
 
 export async function startApi() {
   await connect();

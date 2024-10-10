@@ -1,11 +1,11 @@
 // WeatherXM Miner File
+//@ts-nocheck
 import axios from "axios";
-import { WXMaccount, WXMmodel } from "../db/models/weather_accounts.js";
-import { WeatherModel } from "../db/models/weather-schema.js";
-import { Ecowittmodel } from "../db/models/weather_accounts.js";
 import 'dotenv/config';
 import { SocksProxyAgent } from "socks-proxy-agent";
 import UserAgent from "user-agents";
+import { WeatherModel } from "../db/models/weather-schema.js";
+import { WXMaccount, WXMmodel } from "../db/models/weather_accounts.js";
 const proxy = process.env.PROXY;
 const agent = new SocksProxyAgent(
     'socks://' + proxy
