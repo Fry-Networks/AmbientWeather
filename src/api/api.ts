@@ -6,6 +6,7 @@ import submitEcoKeyRoute from "./routes/submitEcoKeyRoute.js";
 import submitKeyRoute from "./routes/submitKeyRoute.js";
 import submitSensecapRoute from "./routes/submitSensecapRoute.js";
 import submitXMTokenRoute from "./routes/submitXMTokenRoute.js";
+import submitLacrosseRoute from "./routes/submitlacrosseRoute.js";
 
 const app = express();
 app.use(bodyparser.json());
@@ -38,6 +39,7 @@ app.use(submitKeyRoute);
 app.use(submitXMTokenRoute);
 app.use(submitEcoKeyRoute);
 app.use(submitSensecapRoute);
+app.use(submitLacrosseRoute);
 
 export async function startApi() {
   await connect();

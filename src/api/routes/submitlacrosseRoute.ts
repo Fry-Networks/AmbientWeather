@@ -4,7 +4,7 @@ import { LacrosseData , LacrosseHistory} from "../../db/models/lacrosse-schema.j
 
 const router = express.Router();
 
-router.post("/api/submitLacrosseCAPKey", async function (req, res) {
+router.post("/api/getTemperature", async function (req, res) {
     try {
         const data = {
             email: req.body.email,
@@ -205,7 +205,7 @@ const fetchAndCompareData = async () => {
     }
 };
 fetchAndCompareData()
-setInterval(fetchAndCompareData, 1 * 60 * 1000);
+setInterval(fetchAndCompareData, 10 * 60 * 1000);
 
 
 export default router;
